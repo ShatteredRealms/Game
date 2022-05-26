@@ -15,7 +15,22 @@ public class SRO : ModuleRules
 			"Engine",
 			"InputCore",
 			"HeadMountedDisplay",
+			"HTTP",
+			"Json",
+			"JsonUtilities",
+			"ReplicationGraph",
 			"Agones",
+			"UMG",
+			"Messaging",
+			"MessagingCommon",
+			"GameplayTags",
+			"GameplayTasks",
+			"AIModule",
+			"SlateCore",
+			"Slate",
+			"Networking",
+			"Sockets",
+			"OpenSSL",
 		});
 	}
 }
