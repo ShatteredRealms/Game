@@ -17,7 +17,11 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		}
+		},
+		{
+			"Enabled": true,
+			"Name": "Agones"
+		}	
 	],
 	"TargetPlatforms": [
 		"IOS",
