@@ -1,0 +1,28 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{E77E799D-4F4A-771B-DECE-D697D4219737}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "SRO",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	],
+	"TargetPlatforms": [
+		"IOS",
+		"Linux",
+		"LinuxArm64",
+		"Windows"
+	]
+}
