@@ -32,5 +32,7 @@ public class SRO : ModuleRules
 			"Sockets",
 			"OpenSSL",
 		});
+		
+		PublicIncludePaths.Add("$(ProjectDir)/Source/ThirdParty/include");
 	}
 }
