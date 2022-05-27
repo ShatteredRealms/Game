@@ -15,6 +15,10 @@ public:
 	// Sets default values for this pawn's properties
 	ASROOfflinePawn();
 
+	/** The camera the player sees from */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* Camera;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
