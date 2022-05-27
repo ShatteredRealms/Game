@@ -3,3 +3,9 @@
 
 #include "Offline/SROOfflineGameMode.h"
 
+#include "UI/Login/SROLoginHud.h"
+
+ASROOfflineGameMode::ASROOfflineGameMode()
+{
+	HUDClass = ASROLoginHud::StaticClass();
+}

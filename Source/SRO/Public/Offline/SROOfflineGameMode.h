@@ -13,5 +13,7 @@ UCLASS()
 class SRO_API ASROOfflineGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+public:
+	/** Initializes the Game Mode components */
+	ASROOfflineGameMode();
 };
