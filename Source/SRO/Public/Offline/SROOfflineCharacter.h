@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataTypes/SRORace.h"
+#include "DataTypes/SRORealm.h"
 #include "DataTypes/SROGender.h"
 #include "GameFramework/Character.h"
 #include "SROOfflineCharacter.generated.h"
@@ -26,7 +26,7 @@ struct FSROOfflineCharacterInfo
 	FSROGender Gender;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FSRORace Race;;	
+	FSRORealm Realm;
 };
 
 UCLASS(BlueprintType, Blueprintable)

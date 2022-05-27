@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "UObject/ObjectMacros.h"
-#include "SRORace.generated.h"
+#include "SRORealm.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSRORace
+struct FSRORealm
 {
 	GENERATED_BODY()
 
