@@ -25,6 +25,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
 
+	/** The minimum distance the camera can get to the player */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float MinimumCameraDistance;
+
+	/** The maximum distance the camera can get from the player */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float MaximumCameraDistance;
+
+	/** The rate at which the camera zooms in and out */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseCameraZoomRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	bool IsMouseDown;
+
 protected:
 
 	/** Called for forwards/backward input */
@@ -51,6 +66,18 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	/** Called when the mouse is pressed down */
+	void OnMousePressed();
+
+	/** Called when the mouse is released */
+	void OnMouseReleased();
+
+	/**
+	 * Called for zooming in/out input.
+	 * @param Key Key pressed that initiated the zoom. 
+	 */
+	void ZoomCameraAtRate(FKey Key);
+	
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

@@ -31,12 +31,15 @@ ASROCharacter::ASROCharacter()
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
+	GetCharacterMovement()->AirControl = 1.0f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
+	MaximumCameraDistance = 800.f;
+	MinimumCameraDistance = 150.f;
+	BaseCameraZoomRate = 45.f;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
@@ -75,6 +78,11 @@ void ASROCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASROCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ASROCharacter::TouchStopped);
+
+	PlayerInputComponent->BindAction("Adjust Camera", IE_Pressed, this, &ASROCharacter::OnMousePressed);
+	PlayerInputComponent->BindAction("Adjust Camera", IE_Released, this, &ASROCharacter::OnMouseReleased);
+	
+	PlayerInputComponent->BindAction("ZoomCamera", IE_Pressed, this, &ASROCharacter::ZoomCameraAtRate);
 }
 
 void ASROCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -87,8 +95,43 @@ void ASROCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location
 	StopJumping();
 }
 
+void ASROCharacter::OnMousePressed()
+{
+	IsMouseDown = true;
+}
+
+void ASROCharacter::OnMouseReleased()
+{
+	IsMouseDown = false;
+}
+
+void ASROCharacter::ZoomCameraAtRate(FKey Key)
+{
+	float NewDistance = CameraBoom->TargetArmLength;
+	if (Key == EKeys::MouseScrollDown)
+	{
+		NewDistance += BaseCameraZoomRate;
+	}
+	else
+	{
+		NewDistance -= BaseCameraZoomRate;
+	}
+	
+
+	CameraBoom->TargetArmLength = FMath::Clamp(
+		NewDistance,
+		MinimumCameraDistance,
+		MaximumCameraDistance);
+}
+
 void ASROCharacter::TurnAtRate(float Rate)
 {
+	if (IsMouseDown)
+	{
+		MoveRight(Rate);
+		return;
+	}
+	
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
