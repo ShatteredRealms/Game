@@ -1,7 +1,7 @@
 // Copyright 2022 Shattered Realms Online
 
 
-#include "SROOfflinePawn.h"
+#include "Offline/SROOfflinePawn.h"
 
 // Sets default values
 ASROOfflinePawn::ASROOfflinePawn()

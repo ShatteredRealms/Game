@@ -1,7 +1,7 @@
 // Copyright 2022 Shattered Realms Online
 
 
-#include "SROOfflineCharacter.h"
+#include "Offline/SROOfflineCharacter.h"
 
 // Sets default values
 ASROOfflineCharacter::ASROOfflineCharacter()
