@@ -33,6 +33,6 @@ public class SRO : ModuleRules
 			"OpenSSL",
 		});
 		
-		PublicIncludePaths.Add("$(ProjectDir)/Source/ThirdParty/include");
+		PublicIncludePaths.Add("$(ProjectDir)/Source/ThirdParty");
 	}
 }
