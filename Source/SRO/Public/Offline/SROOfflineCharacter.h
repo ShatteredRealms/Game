@@ -3,27 +3,38 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataTypes/SRORace.h"
+#include "DataTypes/SROGender.h"
 #include "GameFramework/Character.h"
 #include "SROOfflineCharacter.generated.h"
 
-UCLASS()
-class SRO_API ASROOfflineCharacter : public ACharacter
+USTRUCT(BlueprintType)
+struct FSROOfflineCharacterInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Id;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Name;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Level;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSROGender Gender;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSRORace Race;;	
+};
+
+UCLASS(BlueprintType, Blueprintable)
+class SRO_API USROOfflineCharacter : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	ASROOfflineCharacter();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSROOfflineCharacterInfo OfflineCharacterInfo;
 };
