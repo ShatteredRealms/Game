@@ -24,13 +24,13 @@ void USROLoginWidget::OnLoginRequestReceived(FHttpRequestPtr Request, FHttpRespo
 	{
 		const FString ErrorMessage =
 			Message == "Error 401" ?
-				"Invalid username and password" : Message+" while logging in";
+				"Invalid email and password" : Message+" while logging in";
 
 		LoginFailed(ErrorMessage);
 		return;
 	}
 
-	AuthToken = JsonObject->GetStringField("token");
+	AuthToken = JsonObject->GetObjectField("data")->GetStringField("token");
 }
 
 void USROLoginWidget::LoginFailed(const FString Message) const
@@ -43,9 +43,9 @@ void USROLoginWidget::LoginFailed(const FString Message) const
 
 void USROLoginWidget::Login()
 {
-	if (UsernameTextBox->GetText().ToString() == "")
+	if (EmailTextBox->GetText().ToString() == "")
 	{
-		LoginFailed("Username cannot be empty");
+		LoginFailed("Email cannot be empty");
 		return;
 	}
 	
@@ -61,5 +61,5 @@ void USROLoginWidget::Login()
 	const auto Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &USROLoginWidget::OnLoginRequestReceived);
 
-	USROAccountsWebLibrary::Login(UsernameTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
+	USROAccountsWebLibrary::Login(EmailTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
 }

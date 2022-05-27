@@ -16,6 +16,8 @@ class SRO_API ASROLoginHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	ASROLoginHUD();
+	
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -24,7 +26,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> LoginWidgetClass;
 
-private:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USROLoginWidget* LoginWidget;	
 };

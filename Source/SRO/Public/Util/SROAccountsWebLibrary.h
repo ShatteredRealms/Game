@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SROWebLibrary.h"
 
 #include "Interfaces/IHttpRequest.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -15,8 +16,8 @@ UCLASS(Config = Game)
 class SRO_API USROAccountsWebLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
+	
 public:
 	/** Processes a login request to the backend auth servers given a request. */
-	static void Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
+	static void Login(const FString& Email, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
 };

@@ -4,6 +4,8 @@
 #include "Offline/SROOfflinePawn.h"
 
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UI/Login/SROLoginWidget.h"
 
 // Sets default values
 ASROOfflinePawn::ASROOfflinePawn()
@@ -15,26 +17,5 @@ ASROOfflinePawn::ASROOfflinePawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	Camera->SetupAttachment(RootComponent);
 	Camera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-}
-
-// Called when the game starts or when spawned
-void ASROOfflinePawn::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ASROOfflinePawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void ASROOfflinePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
