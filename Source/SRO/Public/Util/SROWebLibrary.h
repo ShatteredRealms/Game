@@ -38,7 +38,7 @@ public:
  * 
  */
 UCLASS(Config = Game)
-class SHATTEREDREALMS_API USROWebLibrary : public UBlueprintFunctionLibrary
+class SRO_API USROWebLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -12,7 +12,7 @@
  * 
  */
 UCLASS(Config = Game)
-class SHATTEREDREALMS_API USROAccountsWebLibrary : public UBlueprintFunctionLibrary
+class SRO_API USROAccountsWebLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
