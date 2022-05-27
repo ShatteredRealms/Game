@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b5965e31-5cdf-462a-b11d-49150fecf557" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROGameState.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROGameState.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROPlayerController.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROPlayerController.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROPlayerState.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/SRO/SROPlayerState.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SRO.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/SRO.uproject" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="29jaRMI8wfbEqeaemRUzE9mj3ln" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <created>1653628939630</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1653628939630</updated>
+      <workItem from="1653629011642" duration="28000" />
+    </task>
+    <servers />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+</project>

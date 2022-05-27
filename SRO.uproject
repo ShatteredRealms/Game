@@ -7,7 +7,10 @@
 		{
 			"Name": "SRO",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [
@@ -19,9 +22,9 @@
 			]
 		},
 		{
-			"Enabled": true,
-			"Name": "Agones"
-		}	
+			"Name": "Agones",
+			"Enabled": true
+		}
 	],
 	"TargetPlatforms": [
 		"IOS",
