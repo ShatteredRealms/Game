@@ -5,10 +5,9 @@
 - [CMake](https://cmake.org/download/)
 - [Visual Studio 16 2019](https://visualstudio.microsoft.com/downloads/)
 - gRPC
+- Unreal Engine 5 (Compiled and configured from source code)
 
 ## Getting Started
-### Minimum Requirements
-1. Install prerequisites
-2. Build UE5 from source
-3. Clone repository
-4. Build project
+1. Clone repository
+2. Right click `SRO.uproject` choose `Generate Visual Studio project files` and select the UE5 source location.
+3. Open `SRO.sln` and build the project
