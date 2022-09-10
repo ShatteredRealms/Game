@@ -22,3 +22,9 @@ void ASROOfflineController::BeginPlay()
 	SetInputMode(Mode);
 }
 
+void ASROOfflineController::Logout()
+{
+	AuthToken = nullptr;
+	UserId = -1;
+}
+

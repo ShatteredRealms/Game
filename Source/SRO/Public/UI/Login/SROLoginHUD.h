@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SROCharacterSelectorWidget.h"
+#include "SROCreateCharacterWidget.h"
 #include "GameFramework/HUD.h"
 #include "SROLoginHUD.generated.h"
 
@@ -31,6 +32,9 @@ public:
 	UFUNCTION()
 	void LogoutCompleted() const;
 
+	UFUNCTION()
+	void CreateCharacter() const;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> LoginWidgetClass;
 
@@ -42,4 +46,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USROCharacterSelectorWidget* CharacterSelectorWidget;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<USROCreateCharacterWidget> CreateCharacterWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USROCreateCharacterWidget* CreateCharacterWidget;	
+
 };

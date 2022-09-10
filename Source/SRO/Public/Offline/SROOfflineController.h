@@ -23,4 +23,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Authentication")
 	int32 UserId;
+
+	UFUNCTION(BlueprintCallable)
+	void Logout();
 };

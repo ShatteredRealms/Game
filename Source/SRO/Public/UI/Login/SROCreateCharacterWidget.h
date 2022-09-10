@@ -5,17 +5,18 @@
 #include "CoreMinimal.h"
 #include "HttpModule.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/SROBaseCharacter.h"
-#include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 #include "Components/ListView.h"
 #include "Components/TextBlock.h"
-#include "SROCharacterSelectorWidget.generated.h"
+#include "Interfaces/IHttpRequest.h"
+#include "SROCreateCharacterWidget.generated.h"
 
+class UButton;
 /**
  * 
  */
-UCLASS()
-class SRO_API USROCharacterSelectorWidget : public UUserWidget
+UCLASS(Blueprintable)
+class SRO_API USROCreateCharacterWidget : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
@@ -25,35 +26,41 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UButton* PlayButton;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UButton* LogoutButton;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UButton* CreateCharacterButton;
+	UButton* CreateButton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UListView* CharacterList;
+	UButton* CancelButton;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UButton* LogoutButton;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UListView* GenderList;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UListView* RealmList;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UEditableTextBox* NameTextBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UTextBlock* ErrorText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-	USROBaseCharacter* SelectedBaseCharacter;
+	AActor* CharacterPreview;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-	AActor* SelectedCharacterActor;
-
-	UFUNCTION(BlueprintCallable)
-	void Logout();
-	
 	UFUNCTION(BlueprintCallable)
 	void Reset();
 	
 	UFUNCTION(BlueprintCallable)
 	void CreateCharacter();
 	
-private:
-	void OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	UFUNCTION(BlueprintCallable)
+	void Cancel();
+
+	UFUNCTION(BlueprintCallable)
+	void Logout();
+
+private:	
+	void OnCreateCharacterResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };

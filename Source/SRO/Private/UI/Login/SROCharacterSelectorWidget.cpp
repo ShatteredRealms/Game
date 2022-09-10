@@ -38,9 +38,8 @@ void USROCharacterSelectorWidget::Logout()
 		return;
 	}
 
-	PC->AuthToken = nullptr;
-	PC->UserId = -1;
-
+	PC->Logout();
+	
 	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
 	if (!PC)
 	{
@@ -54,6 +53,25 @@ void USROCharacterSelectorWidget::Logout()
 void USROCharacterSelectorWidget::Reset()
 {
 	CharacterList->ClearListItems();
+}
+
+void USROCharacterSelectorWidget::CreateCharacter()
+{
+	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		return;
+	}
+	
+	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get HUD"))
+		return;
+	}
+
+	HUD->CreateCharacter();
 }
 
 void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
