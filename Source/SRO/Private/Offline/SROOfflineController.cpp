@@ -11,12 +11,14 @@ void ASROOfflineController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FInputModeUIOnly Mode = FInputModeUIOnly();
+	
 	if (const ASROLoginHUD* LoginHUD = StaticCast<ASROLoginHUD*>(GetHUD()))
 	{
-		FInputModeUIOnly Mode = FInputModeUIOnly();
-		Mode.SetWidgetToFocus(LoginHUD->LoginWidget->TakeWidget());
-		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		SetInputMode(Mode);
+		// Mode.SetWidgetToFocus(LoginHUD->LoginWidget->TakeWidget());
 	}
+	
+	Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(Mode);
 }
 

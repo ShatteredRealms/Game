@@ -37,7 +37,7 @@ public:
 /**
  * 
  */
-UCLASS(Config = Game)
+UCLASS()
 class SRO_API USROWebLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()

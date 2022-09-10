@@ -4,9 +4,13 @@
 #include "Util/SROAccountsWebLibrary.h"
 #include "Util/SROWebLibrary.h"
 
+FString USROAccountsWebLibrary::AccountsURL()
+{
+	return USROWebLibrary::GetAPIUrl()+"/accounts/v1";
+}
+
 void USROAccountsWebLibrary::Login(const FString& Email, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
-	const FString URL = USROWebLibrary::GetAPIUrl()+"/accounts/v1/login";
 	const FString Body = FString::Format(
 		TEXT("{ \"email\":\"{0}\", \"password\":\"{1}\" }"),
 		static_cast<FStringFormatOrderedArguments>(
@@ -16,5 +20,5 @@ void USROAccountsWebLibrary::Login(const FString& Email, const FString& Password
 				FStringFormatArg(Password.TrimStartAndEnd())
 			}));
 
-	USROWebLibrary::ProcessJSONRequest(Request, URL, "POST", Body);	
+	USROWebLibrary::ProcessJSONRequest(Request, AccountsURL()+"/login", "POST", Body);	
 }

@@ -72,7 +72,3 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-
-# Generated files from scripts
-Scripts/Windows/grpc/
-Scripts/Windows/api_cpp/

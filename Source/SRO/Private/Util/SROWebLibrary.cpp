@@ -5,6 +5,7 @@
 
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Util/BackendSettings.h"
 
 void USROWebLibrary::Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
@@ -23,7 +24,8 @@ void USROWebLibrary::Login(const FString& Username, const FString& Password, TSh
 
 FString USROWebLibrary::GetAPIUrl()
 {
-	return TEXT("https://api.shatteredrealmsonline.com");
+	const UBackendSettings* Settings = GetDefault<UBackendSettings>();
+	return Settings->APIUrl;
 }
 
 void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,
@@ -40,7 +42,19 @@ void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::Thread
 void USROWebLibrary::ProcessAuthRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,
 	const FString& RequestType, const FString& Body, const FString& AuthToken)
 {
-	Request->SetHeader(TEXT("Authorization"), TEXT("Bearer ")+AuthToken);
+	const FString Authorization = FString::Format(
+		TEXT("Bearer {0}"),
+		static_cast<FStringFormatOrderedArguments>(
+			TArray<FStringFormatArg, TFixedAllocator<1>>
+			{
+				FStringFormatArg(AuthToken),
+			}
+		)
+	);
+	
+	Request->SetHeader(TEXT("Authorization"), Authorization);
+	
+	
 	ProcessJSONRequest(Request, URL, RequestType, Body);
 }
 

@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SROLoginWidget.h"
+#include "SROCharacterSelectorWidget.h"
 #include "GameFramework/HUD.h"
 #include "SROLoginHUD.generated.h"
+
+class USROLoginWidget;
 
 /**
  * 
@@ -23,9 +25,21 @@ public:
 	UFUNCTION()
 	void Login() const;
 
+	UFUNCTION()
+	void LoginCompleted() const;
+
+	UFUNCTION()
+	void LogoutCompleted() const;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> LoginWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USROLoginWidget* LoginWidget;	
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UUserWidget> CharacterSelectorWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USROCharacterSelectorWidget* CharacterSelectorWidget;
 };

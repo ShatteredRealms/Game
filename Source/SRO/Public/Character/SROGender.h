@@ -9,7 +9,7 @@ struct FSROGender
 
 	/** The database ID */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 Id;
+	int64 Id;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Name;

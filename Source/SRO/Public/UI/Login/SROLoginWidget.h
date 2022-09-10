@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HttpModule.h"
+#include "SROLoginHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
@@ -21,10 +22,6 @@ class SRO_API USROLoginWidget : public UUserWidget
 
 protected:
 	FHttpModule* Http;
-
-	FString AuthToken;
-
-	FString RequestedCharacter;
 
 public:
 	USROLoginWidget(const class FObjectInitializer& ObjectInitializer);
@@ -49,8 +46,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Login")
 	void Login();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnSuccessfulLogin();
+	UFUNCTION(BlueprintCallable, Category = "Login")
+	void Reset();
+
+	UFUNCTION(Category = "Login")
+	void OnSuccessfulLogin(FString AuthToken, int32 UserId) const;
 
 private:
 	void OnLoginRequestReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

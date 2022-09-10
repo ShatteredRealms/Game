@@ -3,6 +3,9 @@
 
 #include "UI/Login/SROLoginWidget.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Offline/SROOfflineController.h"
+#include "SRO/SRO.h"
 #include "Util/SROAccountsWebLibrary.h"
 #include "Util/SROWebLibrary.h"
 
@@ -30,7 +33,7 @@ void USROLoginWidget::OnLoginRequestReceived(FHttpRequestPtr Request, FHttpRespo
 		return;
 	}
 
-	AuthToken = JsonObject->GetObjectField("data")->GetStringField("token");
+	OnSuccessfulLogin(JsonObject->GetStringField("token"), JsonObject->GetIntegerField("id"));
 }
 
 void USROLoginWidget::LoginFailed(const FString Message) const
@@ -62,4 +65,32 @@ void USROLoginWidget::Login()
 	Request->OnProcessRequestComplete().BindUObject(this, &USROLoginWidget::OnLoginRequestReceived);
 
 	USROAccountsWebLibrary::Login(EmailTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
+}
+
+void USROLoginWidget::Reset()
+{
+	PasswordTextBox->SetText(FText());
+	LoginButton->SetIsEnabled(true);
+}
+
+void USROLoginWidget::OnSuccessfulLogin(FString AuthToken, int32 UserId) const
+{
+	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		return;
+	}
+
+	PC->AuthToken = AuthToken;
+	PC->UserId = UserId;
+	
+	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get HUD"))
+		return;
+	}
+
+	HUD->LoginCompleted();
 }
