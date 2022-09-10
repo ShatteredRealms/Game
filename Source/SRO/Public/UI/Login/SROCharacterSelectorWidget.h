@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HttpModule.h"
 #include "Blueprint/UserWidget.h"
+#include "Character/SROBaseCharacter.h"
 #include "Components/Button.h"
 #include "Components/ListView.h"
 #include "Components/TextBlock.h"
@@ -37,6 +38,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UTextBlock* ErrorText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	USROBaseCharacter* SelectedBaseCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	AActor* SelectedCharacterActor;
 
 	UFUNCTION(BlueprintCallable)
 	void Logout();

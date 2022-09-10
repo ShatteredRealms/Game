@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/SROBaseCharacter.h"
 #include "GameFramework/Character.h"
 #include "SROCharacter.generated.h"
 
@@ -18,6 +19,7 @@ class ASROCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
 public:
 	ASROCharacter();
 
@@ -40,6 +42,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	bool IsMouseDown;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character")
+	USROBaseCharacter* BaseCharacter;
 protected:
 
 	/** Called for forwards/backward input */

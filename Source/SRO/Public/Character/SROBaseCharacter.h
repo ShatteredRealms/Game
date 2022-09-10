@@ -3,9 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SROGender.h"
-#include "SRORealm.h"
-#include "UObject/NoExportTypes.h"
 #include "SROBaseCharacter.generated.h"
 
 USTRUCT(BlueprintType)
@@ -42,7 +39,7 @@ struct FSROBaseCharacterStruct
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class SRO_API USROBaseCharacter : public UObject
 {
 	GENERATED_BODY()
