@@ -31,8 +31,7 @@ public class SRO : ModuleRules
 			"Networking",
 			"Sockets",
 			"OpenSSL",
+			"JWTPlugin",
 		});
-		
-		PublicIncludePaths.Add("$(ProjectDir)/Source/ThirdParty");
 	}
 }

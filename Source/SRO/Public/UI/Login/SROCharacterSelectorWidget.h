@@ -53,6 +53,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void CreateCharacter();
+
+	UFUNCTION(BlueprintCallable)
+	void Play();
 	
 private:
 	void OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

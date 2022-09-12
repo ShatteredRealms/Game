@@ -75,7 +75,7 @@ void USROLoginWidget::Reset()
 
 void USROLoginWidget::OnSuccessfulLogin(FString AuthToken, int32 UserId) const
 {
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))

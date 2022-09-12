@@ -8,8 +8,8 @@ void ASROPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	FInputModeGameAndUI mode = FInputModeGameAndUI();
-	mode.SetHideCursorDuringCapture(false);
+	mode.SetHideCursorDuringCapture(true);
 	mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture);
-	
+	SetShowMouseCursor(true);
 	SetInputMode(mode);
 }

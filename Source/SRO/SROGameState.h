@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class SRO_API ASROGameState : public AGameState
+class SRO_API ASROGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 	

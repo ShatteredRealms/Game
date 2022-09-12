@@ -27,6 +27,11 @@
 		{
 			"Name": "Agones",
 			"Enabled": true
+		},
+		{
+			"Name": "JWTPlugin",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5a7b13f17ce04fc3b4a571a8faf58b4a"
 		}
 	],
 	"TargetPlatforms": [

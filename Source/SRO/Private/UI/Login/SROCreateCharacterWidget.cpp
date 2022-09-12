@@ -30,7 +30,7 @@ void USROCreateCharacterWidget::CreateCharacter()
 	const auto Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &USROCreateCharacterWidget::OnCreateCharacterResponse);
 
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
@@ -43,7 +43,7 @@ void USROCreateCharacterWidget::CreateCharacter()
 
 void USROCreateCharacterWidget::Cancel()
 {
-	const ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
@@ -62,7 +62,7 @@ void USROCreateCharacterWidget::Cancel()
 
 void USROCreateCharacterWidget::Logout()
 {
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
@@ -94,7 +94,7 @@ void USROCreateCharacterWidget::OnCreateCharacterResponse(FHttpRequestPtr Reques
 	}
 
 	
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))

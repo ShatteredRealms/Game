@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "SRO/SRO.h"
+#include "SRO/SROCharacter.h"
 #include "UI/Login/SROLoginHUD.h"
 #include "Util/SROCharactersWebLibrary.h"
 #include "Util/SROWebLibrary.h"
@@ -57,7 +58,7 @@ void USROCharacterSelectorWidget::Reset()
 
 void USROCharacterSelectorWidget::CreateCharacter()
 {
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
@@ -74,6 +75,36 @@ void USROCharacterSelectorWidget::CreateCharacter()
 	HUD->CreateCharacter();
 }
 
+void USROCharacterSelectorWidget::Play()
+{
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		return;
+	}
+
+	USROBaseCharacter* Character = CharacterList->GetSelectedItem<USROBaseCharacter>();
+	if (!Character)
+	{
+		UE_LOG(LogSRO, Error, TEXT("No character selected"))
+		return;
+	}
+	
+	FString URL = FString::Format(
+		TEXT("{0}:{1}?t={2}?c={3}"),
+		static_cast<FStringFormatOrderedArguments>(
+			TArray<FStringFormatArg, TFixedAllocator<4>>
+			{
+				FStringFormatArg("127.0.0.1"),
+				FStringFormatArg("17777"),
+				FStringFormatArg(PC->AuthToken),
+				FStringFormatArg(Character->BaseData.Name),
+			}));
+	
+	GetPlayerContext().GetPlayerController()->ClientTravel(URL, TRAVEL_Absolute);
+}
+
 void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
                                                        bool bWasSuccessful)
 {
@@ -86,10 +117,9 @@ void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, 
 		return;
 	}
 
-	USROBaseCharacter* Character;
 	for ( TSharedPtr<FJsonValue> CharacterJsonValue : JsonObject->GetArrayField("characters"))
 	{
-		Character = NewObject<USROBaseCharacter>();
+		USROBaseCharacter* Character = NewObject<USROBaseCharacter>();
 		Character->BaseData = FSROBaseCharacterStruct(CharacterJsonValue->AsObject());
 		CharacterList->AddItem(Character);
 	}
