@@ -32,6 +32,7 @@ public class SRO : ModuleRules
 			"Sockets",
 			"OpenSSL",
 			"JWTPlugin",
+			"ChunkDownloader",
 		});
 	}
 }

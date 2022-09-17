@@ -28,6 +28,11 @@ void USROCharacterSelectorWidget::NativeConstruct()
 	}
 	
 	USROCharactersWebLibrary::GetCharacters(PC->UserId, PC->AuthToken, Request);
+
+	SelectedCharacterSpawnLocation = {0, 0, 0};
+	SelectedCharacterSpawnRotator = {0, 0, 0};
+
+	BaseActorClass = ASROCharacter::StaticClass();
 }
 
 void USROCharacterSelectorWidget::Logout()

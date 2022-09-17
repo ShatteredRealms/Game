@@ -8,7 +8,7 @@
 
 ASROOfflineGameMode::ASROOfflineGameMode()
 {
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Login/Blueprints/BP_OfflinePawn"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/SRO/Core/Login/Blueprints/BP_OfflinePawn"));
 	if (PlayerPawnBPClass.Class != nullptr)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;

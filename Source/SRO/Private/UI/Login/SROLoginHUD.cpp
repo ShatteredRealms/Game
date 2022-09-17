@@ -10,13 +10,13 @@
 
 ASROLoginHUD::ASROLoginHUD()
 {
-	static ConstructorHelpers::FClassFinder<USROLoginWidget> FoundLoginWidget(TEXT("/Game/Login/Blueprints/BP_LoginWidget"));
+	static ConstructorHelpers::FClassFinder<USROLoginWidget> FoundLoginWidget(TEXT("/Game/SRO/Core/Login/Blueprints/BP_LoginWidget"));
 	LoginWidgetClass = FoundLoginWidget.Class;
 	
-	static ConstructorHelpers::FClassFinder<USROCharacterSelectorWidget> FoundCharacterSelectorWidget(TEXT("/Game/Login/Blueprints/BP_CharacterSelectorWidget"));
+	static ConstructorHelpers::FClassFinder<USROCharacterSelectorWidget> FoundCharacterSelectorWidget(TEXT("/Game/SRO/Core/Login/Blueprints/BP_CharacterSelectorWidget"));
 	CharacterSelectorWidgetClass = FoundCharacterSelectorWidget.Class; 
 	
-	static ConstructorHelpers::FClassFinder<USROCreateCharacterWidget> FoundCreateCharacterWidget(TEXT("/Game/Login/Blueprints/BP_CreateCharacterWidget"));
+	static ConstructorHelpers::FClassFinder<USROCreateCharacterWidget> FoundCreateCharacterWidget(TEXT("/Game/SRO/Core/Login/Blueprints/BP_CreateCharacterWidget"));
 	CreateCharacterWidgetClass = FoundCreateCharacterWidget.Class; 
 }
 

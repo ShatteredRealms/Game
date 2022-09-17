@@ -45,6 +45,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 	AActor* SelectedCharacterActor;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	FVector SelectedCharacterSpawnLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	FRotator SelectedCharacterSpawnRotator;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	UClass* BaseActorClass;
+
 	UFUNCTION(BlueprintCallable)
 	void Logout();
 	
