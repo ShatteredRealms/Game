@@ -96,18 +96,9 @@ void USROCharacterSelectorWidget::Play()
 		return;
 	}
 	
-	FString URL = FString::Format(
-		TEXT("{0}:{1}?t={2}?c={3}"),
-		static_cast<FStringFormatOrderedArguments>(
-			TArray<FStringFormatArg, TFixedAllocator<4>>
-			{
-				FStringFormatArg("127.0.0.1"),
-				FStringFormatArg("17777"),
-				FStringFormatArg(PC->AuthToken),
-				FStringFormatArg(Character->BaseData.Name),
-			}));
-	
-	GetPlayerContext().GetPlayerController()->ClientTravel(URL, TRAVEL_Absolute);
+	const auto Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &USROCharacterSelectorWidget::OnConnectResponseReceived);
+	USROCharactersWebLibrary::Connect(Character->BaseData.Id, PC->AuthToken, Request);
 }
 
 void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
@@ -130,4 +121,43 @@ void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, 
 	}
 	
 	CharacterList->SetSelectedIndex(0);
+}
+void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	TSharedPtr<FJsonObject> JsonObject;
+	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject); 
+	if (Message != TEXT(""))
+	{
+		ErrorText->SetText(FText::FromString(Message));
+		ErrorText->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
+	if (!PC)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		return;
+	}
+
+	USROBaseCharacter* Character = CharacterList->GetSelectedItem<USROBaseCharacter>();
+	if (!Character)
+	{
+		UE_LOG(LogSRO, Error, TEXT("No character selected"))
+		return;
+	}
+	
+	FString URL = FString::Format(
+		TEXT("{0}:{1}?t={2}?c={3}"),
+		static_cast<FStringFormatOrderedArguments>(
+			TArray<FStringFormatArg, TFixedAllocator<4>>
+			{
+				FStringFormatArg(JsonObject->GetStringField("address")),
+				FStringFormatArg(JsonObject->GetStringField("port")),
+				FStringFormatArg(PC->AuthToken),
+				FStringFormatArg(Character->BaseData.Name),
+			}));
+	
+	GetPlayerContext().GetPlayerController()->ClientTravel(URL, TRAVEL_Absolute);
 }

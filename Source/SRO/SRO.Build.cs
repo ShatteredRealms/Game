@@ -7,6 +7,7 @@ public class SRO : ModuleRules
 	public SRO(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		bEnableExceptions = true;
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{

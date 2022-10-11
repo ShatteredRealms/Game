@@ -72,3 +72,10 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Packages & Releases
+Package
+Releases
+
+# Agones Sidecar For Testing
+Agones\ Sidecar

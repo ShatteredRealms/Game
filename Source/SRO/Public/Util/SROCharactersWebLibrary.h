@@ -19,6 +19,8 @@ class SRO_API USROCharactersWebLibrary : public UBlueprintFunctionLibrary
 public:
 	static FString CharactersURL();
 
+	static void Connect(int32 CharacterId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
+
 	static void GetCharacters(int32 UserId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
 	
 	static void CreateCharacter(TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request, FString AuthToken, int32 OwnerId, FString Name, int32 GenderId, int32 RealmId);

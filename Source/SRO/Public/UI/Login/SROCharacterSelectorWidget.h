@@ -18,6 +18,7 @@ UCLASS()
 class SRO_API USROCharacterSelectorWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 protected:
 	FHttpModule* Http;
 	
@@ -68,4 +69,6 @@ public:
 	
 private:
 	void OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void OnConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };
+

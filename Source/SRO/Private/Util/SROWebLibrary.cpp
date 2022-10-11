@@ -28,8 +28,17 @@ FString USROWebLibrary::GetAPIUrl()
 	return Settings->APIUrl;
 }
 
+FString USROWebLibrary::GetServerFinderURL()
+{
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "127.0.0.1:8083/v1";
+#else
+	return USROWebLibrary::GetAPIUrl()+"/serverfinder/v1/";
+#endif
+}
+
 void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,
-                                   const FString& RequestType, const FString& Body)
+                                        const FString& RequestType, const FString& Body)
 {
 	Request->SetURL(URL);
 	Request->SetVerb(RequestType);

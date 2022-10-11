@@ -46,6 +46,9 @@ public:
 	/** Gets the API URL for the backend server. The URL does NOT end in a forward slash. */
 	UFUNCTION(BlueprintCallable)
 	static FString GetAPIUrl();
+
+	UFUNCTION(BlueprintCallable)
+	static FString GetServerFinderURL();
 	
 	/** Processes a login request to the backend auth servers given a request. */
 	static void Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
