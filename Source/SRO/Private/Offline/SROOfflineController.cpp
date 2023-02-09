@@ -3,6 +3,7 @@
 
 #include "Offline/SROOfflineController.h"
 
+#include "Net/UnrealNetwork.h"
 #include "UI/Login/SROLoginHUD.h"
 
 
@@ -12,12 +13,6 @@ void ASROOfflineController::BeginPlay()
 	Super::BeginPlay();
 
 	FInputModeUIOnly Mode = FInputModeUIOnly();
-	
-	if (const ASROLoginHUD* LoginHUD = StaticCast<ASROLoginHUD*>(GetHUD()))
-	{
-		// Mode.SetWidgetToFocus(LoginHUD->LoginWidget->TakeWidget());
-	}
-	
 	Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(Mode);
 }
@@ -26,5 +21,12 @@ void ASROOfflineController::Logout()
 {
 	AuthToken = nullptr;
 	UserId = -1;
+}
+
+void ASROOfflineController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ASROOfflineController, AuthToken, COND_OwnerOnly);
 }
 

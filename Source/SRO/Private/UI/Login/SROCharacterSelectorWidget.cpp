@@ -3,6 +3,7 @@
 
 #include "UI/Login/SROCharacterSelectorWidget.h"
 
+#include "Dom/JsonObject.h"
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "SRO/SRO.h"
@@ -125,15 +126,50 @@ void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, 
 void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
 	bool bWasSuccessful)
 {
-	TSharedPtr<FJsonObject> JsonObject;
-	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject); 
-	if (Message != TEXT(""))
-	{
-		ErrorText->SetText(FText::FromString(Message));
-		ErrorText->SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
-
+	// TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	// const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject); 
+	// if (Message != TEXT(""))
+	// {
+	// 	FString JsonResponse;
+	// 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonResponse);
+	// 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+	//
+	// 	GEngine->AddOnScreenDebugMessage(-1, 30.f, FColor::Red, JsonResponse);
+	// 	
+	// 	UE_LOG(LogSRO, Error, TEXT("%s"), *JsonResponse);
+	// 	
+	// 	ErrorText->SetText(FText::FromString(Message));
+	// 	ErrorText->SetVisibility(ESlateVisibility::Visible);
+	// 	return;
+	// }
+	//
+	// ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
+	// if (!PC)
+	// {
+	// 	UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+	// 	return;
+	// }
+	//
+	// USROBaseCharacter* Character = CharacterList->GetSelectedItem<USROBaseCharacter>();
+	// if (!Character)
+	// {
+	// 	UE_LOG(LogSRO, Error, TEXT("No character selected"))
+	// 	return;
+	// }
+	//
+	// FString URL = FString::Format(
+	// 	TEXT("{0}:{1}?t={2}?c={3}"),
+	// 	static_cast<FStringFormatOrderedArguments>(
+	// 		TArray<FStringFormatArg, TFixedAllocator<4>>
+	// 		{
+	// 			FStringFormatArg(JsonObject->GetStringField("address")),
+	// 			FStringFormatArg(JsonObject->GetStringField("port")),
+	// 			FStringFormatArg(PC->AuthToken),
+	// 			FStringFormatArg(Character->BaseData.Name),
+	// 		}));
+	//
+	// GetPlayerContext().GetPlayerController()->ClientTravel(URL, TRAVEL_Absolute);
+	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
@@ -149,12 +185,10 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Requ
 	}
 	
 	FString URL = FString::Format(
-		TEXT("{0}:{1}?t={2}?c={3}"),
+		TEXT("127.0.0.1:7777?t={0}?c={1}"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<4>>
 			{
-				FStringFormatArg(JsonObject->GetStringField("address")),
-				FStringFormatArg(JsonObject->GetStringField("port")),
 				FStringFormatArg(PC->AuthToken),
 				FStringFormatArg(Character->BaseData.Name),
 			}));

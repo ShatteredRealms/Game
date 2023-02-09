@@ -7,34 +7,55 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Util/BackendSettings.h"
 
-void USROWebLibrary::Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
-{
-	const FString URL = GetAPIUrl()+"/v1/auth/login";
-	const FString Body = FString::Format(
-		TEXT("{ \"username\":\"{0}\", \"password\":\"{1}\" }"),
-		static_cast<FStringFormatOrderedArguments>(
-			TArray<FStringFormatArg, TFixedAllocator<2>>
-			{
-				FStringFormatArg(Username.TrimStartAndEnd()),
-				FStringFormatArg(Password.TrimStartAndEnd())
-			}));
-
-	ProcessJSONRequest(Request, URL, "POST", Body);	
-}
-
 FString USROWebLibrary::GetAPIUrl()
 {
 	const UBackendSettings* Settings = GetDefault<UBackendSettings>();
 	return Settings->APIUrl;
 }
 
-FString USROWebLibrary::GetServerFinderURL()
+FString USROWebLibrary::GetGameBackendAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
-	return "127.0.0.1:8083/v1";
-#else
-	return USROWebLibrary::GetAPIUrl()+"/serverfinder/v1/";
-#endif
+// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "localhost:8082/v1";
+// #else
+	// return GetAPIUrl()+"/gamebackend/v1";
+// #endif
+}
+
+FString USROWebLibrary::GetCharactersAPIUrl()
+{
+// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+// 	return "localhost:8081/v1";
+// #else
+	return GetAPIUrl()+"/characters/v1";
+// #endif
+}
+
+FString USROWebLibrary::GetAccountsAPIUrl()
+{
+// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+// 	return "localhost:8080/v1";
+// #else
+	return GetAPIUrl()+"/accounts/v1";
+// #endif
+}
+
+FString USROWebLibrary::GetChatAPIUrl()
+{
+// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+// 	return "localhost:8180/v1";
+// #else
+	return GetAPIUrl()+"/chat/v1";
+// #endif
+}
+
+FString USROWebLibrary::GetChatGRPCUrl()
+{
+// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+// 	return "localhost:8180";
+// #else
+	return GetAPIUrl()+"/chat";
+// #endif
 }
 
 void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,

@@ -32,7 +32,7 @@ public:
 	UCanvasPanel* LoginPanel;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UEditableTextBox* EmailTextBox;
+	UEditableTextBox* UsernameTextBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UEditableTextBox* PasswordTextBox;

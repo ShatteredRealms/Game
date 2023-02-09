@@ -3,17 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
+#include "Chat/SROChatService.h"
 #include "Offline/SROOfflineController.h"
 #include "SROPlayerController.generated.h"
+
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class SRO_API ASROPlayerController : public ASROOfflineController
 {
 	GENERATED_BODY()
+
 public:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere)
+	USROChatService* ChatService;
 };
+
+

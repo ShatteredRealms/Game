@@ -17,8 +17,6 @@ class SRO_API USROCharactersWebLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	static FString CharactersURL();
-
 	static void Connect(int32 CharacterId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
 
 	static void GetCharacters(int32 UserId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);

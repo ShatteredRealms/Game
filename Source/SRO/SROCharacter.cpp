@@ -54,6 +54,11 @@ ASROCharacter::ASROCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ASROCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 

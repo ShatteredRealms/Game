@@ -23,6 +23,8 @@ class ASROCharacter : public ACharacter
 public:
 	ASROCharacter();
 
+	virtual void BeginPlay() override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;

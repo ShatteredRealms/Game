@@ -46,9 +46,9 @@ void USROLoginWidget::LoginFailed(const FString Message) const
 
 void USROLoginWidget::Login()
 {
-	if (EmailTextBox->GetText().ToString() == "")
+	if (UsernameTextBox->GetText().ToString() == "")
 	{
-		LoginFailed("Email cannot be empty");
+		LoginFailed("Username cannot be empty");
 		return;
 	}
 	
@@ -64,7 +64,7 @@ void USROLoginWidget::Login()
 	const auto Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &USROLoginWidget::OnLoginRequestReceived);
 
-	USROAccountsWebLibrary::Login(EmailTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
+	USROAccountsWebLibrary::Login(UsernameTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
 }
 
 void USROLoginWidget::Reset()

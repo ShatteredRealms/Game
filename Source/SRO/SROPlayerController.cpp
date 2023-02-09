@@ -3,6 +3,9 @@
 
 #include "SROPlayerController.h"
 
+#include "SROGameMode.h"
+#include "Net/UnrealNetwork.h"
+
 void ASROPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -12,4 +15,10 @@ void ASROPlayerController::BeginPlay()
 	mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture);
 	SetShowMouseCursor(true);
 	SetInputMode(mode);
+
+	if (IsLocalPlayerController())
+	{
+		ChatService = NewObject<USROChatService>();
+		ChatService->ConnectToChannel(1, AuthToken);
+	}
 }

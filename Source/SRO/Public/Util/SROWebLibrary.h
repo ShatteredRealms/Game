@@ -46,12 +46,21 @@ public:
 	/** Gets the API URL for the backend server. The URL does NOT end in a forward slash. */
 	UFUNCTION(BlueprintCallable)
 	static FString GetAPIUrl();
+	
+	UFUNCTION(BlueprintCallable)
+	static FString GetGameBackendAPIUrl();
+	
+	UFUNCTION(BlueprintCallable)
+	static FString GetCharactersAPIUrl();
 
 	UFUNCTION(BlueprintCallable)
-	static FString GetServerFinderURL();
-	
-	/** Processes a login request to the backend auth servers given a request. */
-	static void Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
+	static FString GetAccountsAPIUrl();
+
+	UFUNCTION(BlueprintCallable)
+	static FString GetChatAPIUrl();
+
+	UFUNCTION(BlueprintCallable)
+	static FString GetChatGRPCUrl();
 
 	/** Sets the necessary headers for a valid HTTP request and processes it. */
 	static void ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL, const FString& RequestType, const FString& Body);

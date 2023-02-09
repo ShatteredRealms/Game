@@ -3,12 +3,8 @@
 
 #include "Util/SROCharactersWebLibrary.h"
 
+#include "SRO/SRO.h"
 #include "Util/SROWebLibrary.h"
-
-FString USROCharactersWebLibrary::CharactersURL()
-{
-	return USROWebLibrary::GetAPIUrl()+"/characters/v1";
-}
 
 void USROCharactersWebLibrary::Connect(int32 CharacterId, FString AuthToken,
                                        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
@@ -18,11 +14,14 @@ void USROCharactersWebLibrary::Connect(int32 CharacterId, FString AuthToken,
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
-				FStringFormatArg(USROWebLibrary::GetAPIUrl()+"/gamebackend/v1"),
+				FStringFormatArg(USROWebLibrary::GetGameBackendAPIUrl()),
 				FStringFormatArg(CharacterId),
 			}
 		)
 	);
+
+	UE_LOG(LogSRO, Display, TEXT("URL: %s"), &Url);
+	UE_LOG(LogSRO, Display, TEXT("Body: %s"), &Url);
 	
 	USROWebLibrary::ProcessAuthRequest(Request, Url, "GET", "", AuthToken);	
 }
@@ -34,7 +33,7 @@ void USROCharactersWebLibrary::GetCharacters(int32 UserId, FString AuthToken, TS
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
-				FStringFormatArg(CharactersURL()),
+				FStringFormatArg(USROWebLibrary::GetCharactersAPIUrl()),
 				FStringFormatArg(UserId),
 			}
 		)
@@ -51,7 +50,7 @@ void USROCharactersWebLibrary::CreateCharacter(TSharedRef<IHttpRequest, ESPMode:
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
-				FStringFormatArg(CharactersURL()),
+				FStringFormatArg(USROWebLibrary::GetCharactersAPIUrl()),
 				FStringFormatArg(OwnerId),
 			}
 		)

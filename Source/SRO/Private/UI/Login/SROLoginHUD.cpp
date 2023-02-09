@@ -30,6 +30,7 @@ void ASROLoginHUD::BeginPlay()
 		if (LoginWidget)
 		{
 			LoginWidget->AddToViewport();
+			LoginWidget->UsernameTextBox->SetFocus();
 			UE_LOG(LogSRO, Display, TEXT("Login Widget Added to view"));
 		}
 		else
@@ -68,7 +69,7 @@ void ASROLoginHUD::BeginPlay()
 		UE_LOG(LogSRO, Warning, TEXT("Create Character Widget Class NOT found"));
 	}
 	
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(true);
+	GetOwningPlayerController()->SetShowMouseCursor(true);
 }
 
 void ASROLoginHUD::Login() const

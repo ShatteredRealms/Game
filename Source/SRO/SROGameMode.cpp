@@ -20,12 +20,12 @@
 ASROGameMode::ASROGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Characters/CyberpunkSamurai/BP_CyberpunkSamurai"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/SRO/Core/Gameplay/BP_SROCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
-
+	
 	PlayerStateClass = ASROPlayerState::StaticClass();
 
 	PlayerControllerClass = ASROPlayerController::StaticClass();
@@ -36,9 +36,12 @@ ASROGameMode::ASROGameMode()
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
 
+#pragma push_macro("GetEnvironmentVariable")
+#undef GetEnvironmentVariable
 	FBase64::Decode(FPlatformMisc::GetEnvironmentVariable(TEXT("JWT_PUBLIC_KEY")), JWTPublicKey);
 	FBase64::Decode(FPlatformMisc::GetEnvironmentVariable(TEXT("JWT_PRIVATE_KEY")), JWTPrivateKey);
-
+#pragma pop_macro("GetEnvironmentVariable")
+	
 	JWTVerifier = UJWTPluginBPLibrary::CreateVerifier(JWTPublicKey, EAlgorithm::rs256);
 }
 
@@ -64,6 +67,8 @@ void ASROGameMode::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePt
 	PendingConnections.Emplace(UserId, Message == TEXT("") ? ACCEPTED : REJECTED);
 }
 
+
+//@TODO: Validate the player isn't already logged in
 void ASROGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
 	FString& ErrorMessage)
 {
@@ -82,6 +87,7 @@ void ASROGameMode::PreLogin(const FString& Options, const FString& Address, cons
 		ErrorMessage = TEXT("No character name given");
 		return;
 	}
+	
 	//
 	// if (!ValidateAuthToken(AuthToken, CharacterName))
 	// {
@@ -90,6 +96,26 @@ void ASROGameMode::PreLogin(const FString& Options, const FString& Address, cons
 	// }
 
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+}
+
+APlayerController* ASROGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal,
+	const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	APlayerController* defaultPC = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+	ASROPlayerController* PC = Cast<ASROPlayerController>(defaultPC);
+	
+	if (PC)
+	{
+		PC->SetName(UGameplayStatics::ParseOption(Options, TEXT("c")));
+		PC->AuthToken = UGameplayStatics::ParseOption(Options, TEXT("t"));
+	}
+	else
+	{
+		ErrorMessage = TEXT("Unable to cast player controller");
+		return nullptr;
+	}
+	
+	return PC;
 }
 
 APlayerController* ASROGameMode::SpawnPlayerController(ENetRole InRemoteRole, const FString& Options)
