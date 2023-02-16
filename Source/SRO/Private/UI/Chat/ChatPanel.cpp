@@ -4,14 +4,14 @@
 #include "UI/Chat/ChatPanel.h"
 
 #include "SRO/SRO.h"
-#include "Util/SROChatWebLibrary.h"
+#include "UI/TabWidget.h"
 
 UChatPanel::UChatPanel(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FClassFinder<UChatTabWidget> FoundChatTabWidget(TEXT("/Game/SRO/UI/Chat/ChatTab"));
-	ChatTabWidgetClass = FoundChatTabWidget.Class;
+	static ConstructorHelpers::FClassFinder<UTabWidget> FoundTabWidget(TEXT("/Game/SRO/Core/UI/BP_Tab"));
+	TabWidgetClass = FoundTabWidget.Class;
 	
-	static ConstructorHelpers::FClassFinder<UChatBoxWidget> FoundChatBoxWidget(TEXT("/Game/SRO/UI/Chat/ChatBox"));
+	static ConstructorHelpers::FClassFinder<UChatBoxWidget> FoundChatBoxWidget(TEXT("/Game/SRO/Core/UI/Chat/ChatBox"));
 	ChatBoxWidgetClass = FoundChatBoxWidget.Class;
 }
 
@@ -28,26 +28,28 @@ void UChatPanel::NativeConstruct()
 
 	OnChatTabSelected.BindUObject(this, &UChatPanel::FocusTab);
 
-	TSet<int64> ChannelIds;
-	ChannelIds.Add(1);
-	auto Tab = CreateTab(FText::FromString("All"), ChannelIds);	
-	FocusTab(Tab);
-
 	ChatTextBox->OnTextCommitted.AddDynamic(this, &UChatPanel::OnChatMessageSubmitted);
 }
 
 
-UChatTabWidget* UChatPanel::CreateTab(const FText& TabName, const TSet<int64> ChannelIds)
+UTabWidget* UChatPanel::CreateTab(const FText& TabName, const TSet<UChatChannel*> ChatChannels, UChatChannel* CurrentChannel)
 {
 	// Create Tab
-	UChatTabWidget* Tab = CreateWidget<UChatTabWidget>(PC, ChatTabWidgetClass);
+	UTabWidget* Tab = CreateWidget<UTabWidget>(PC, TabWidgetClass);
+
+	if (!Tab)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to create tab"))
+		return nullptr;
+	}
+	
 	Tab->TabName->SetText(TabName);
-	Tab->bSelected = true;
-	Tab->OnChatTabSelected = &OnChatTabSelected;
+	Tab->SetSelected(true);
+	Tab->OnTabSelected = &OnChatTabSelected;
 
 	// Create chat box that holds tab messages
 	UChatBoxWidget* ChatBox = CreateWidget<UChatBoxWidget>(PC, ChatBoxWidgetClass);
-	ChatBox->SetupChat(ChannelIds);
+	ChatBox->SetupChat(ChatChannels, CurrentChannel);
 
 	// Add to tab bar
 	ChannelTabsHorizontalBox->AddChildToHorizontalBox(Tab);
@@ -58,26 +60,39 @@ UChatTabWidget* UChatPanel::CreateTab(const FText& TabName, const TSet<int64> Ch
 	return Tab;
 }
 
-void UChatPanel::FocusTab(UChatTabWidget* Tab)
+void UChatPanel::FocusTab(UTabWidget* Tab)
 {
 	for (const auto tab : ChatTabs)
 	{
 		if (tab.Key == Tab)
 		{
-			Tab->bSelected = true;
+			Tab->SetSelected(true);
 			MessagesScrollBox->ClearChildren();
 			MessagesScrollBox->AddChild(tab.Value);
-			CurrentTab = Tab;
+			CurrentTab = tab.Key;
+			if (tab.Value->CurrentChannel)
+			{
+				ChatTextBox->SetHintText(FText::FromString(tab.Value->CurrentChannel->Struct.Name));
+			}
+			else
+			{
+				ChatTextBox->SetHintText(FText::FromString(""));
+			}
 		}
 		else
 		{
-			tab.Key->bSelected = false;
+			tab.Key->SetSelected(false);
 		}
 	}
 }
 
 UChatBoxWidget* UChatPanel::GetCurrentChatBox()
 {
+	if (!CurrentTab)
+	{
+		return nullptr;
+	}
+	
 	return *ChatTabs.Find(CurrentTab);
 }
 
@@ -87,7 +102,10 @@ void UChatPanel::OnChatMessageSubmitted(const FText& Text, ETextCommit::Type Com
 	{
 		return;
 	}
-	
-	GetCurrentChatBox()->SendChatMessage(Text);
-	ChatTextBox->SetText({});
+
+	if (UChatBoxWidget* CurrentChatBox = GetCurrentChatBox())
+	{
+		CurrentChatBox->SendChatMessage(Text);
+		ChatTextBox->SetText({});
+	}
 }

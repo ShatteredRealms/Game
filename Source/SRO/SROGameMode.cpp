@@ -11,6 +11,7 @@
 #include "SROGameState.h"
 #include "SROPlayerController.h"
 #include "SROPlayerState.h"
+#include "GameFramework/HUD.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -24,6 +25,12 @@ ASROGameMode::ASROGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+	
+	static ConstructorHelpers::FClassFinder<AHUD> SROHUDBPClass(TEXT("/Game/SRO/Core/UI/BP_SROHud"));
+	if (SROHUDBPClass.Class != NULL)
+	{
+		HUDClass = SROHUDBPClass.Class;
 	}
 	
 	PlayerStateClass = ASROPlayerState::StaticClass();

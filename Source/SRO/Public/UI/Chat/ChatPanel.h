@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ChatBoxWidget.h"
-#include "ChatTabWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/EditableTextBox.h"
 #include "Components/HorizontalBox.h"
@@ -12,6 +11,7 @@
 #include "Components/ScrollBox.h"
 #include "SRO/SROPlayerController.h"
 #include "UI/DraggableResizableWidget.h"
+#include "UI/TabWidget.h"
 #include "ChatPanel.generated.h"
 
 
@@ -32,20 +32,21 @@ private:
 	/** The player controller that owns this widget */
 	ASROPlayerController* PC;
 
-	FChatTabSelectedDelegate OnChatTabSelected;
+	FTabSelectedDelegate OnChatTabSelected;
 
 public:
 	// Derived classes
 	/** The tab and ChatBox relationship pair */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<UChatTabWidget*, UChatBoxWidget*> ChatTabs;
+	TMap<UTabWidget*, UChatBoxWidget*> ChatTabs;
 
+	/** The currently selected tab. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UChatTabWidget* CurrentTab;
-	
-	/** Chat Tab Widget BP Class that creates the UI */
+	UTabWidget* CurrentTab;
+
+	/** Tab Widget BP Class that creates the UI */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UChatTabWidget> ChatTabWidgetClass;
+	TSubclassOf<UTabWidget> TabWidgetClass;
 
 	/** Chat Box Widget BP Class that creates the UI */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -73,11 +74,11 @@ public:
 	// Panel management functions
 	/** Adds a new tab to the chat panel*/
 	UFUNCTION(BlueprintCallable)
-	UChatTabWidget* CreateTab(const FText& TabName, const TSet<int64> ChannelIds);
+	UTabWidget* CreateTab(const FText& TabName, const TSet<UChatChannel*> ChatChannels, UChatChannel* CurrentChannel);
 
 	/** Focuses the given tab and shows the paired chatbox */
 	UFUNCTION(BlueprintCallable)
-	void FocusTab(UChatTabWidget* Tab);
+	void FocusTab(UTabWidget* Tab);
 
 	UFUNCTION(BlueprintCallable)
 	UChatBoxWidget* GetCurrentChatBox();

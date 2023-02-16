@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Chat/ChatChannel.h"
 #include "Chat/ChatMessage.h"
 #include "Components/ListView.h"
 #include "Interfaces/IHttpRequest.h"
@@ -21,12 +22,12 @@ class SRO_API UChatBoxWidget : public UUserWidget
 
 	/** The channel ids that will be shown in this chat */
 	UPROPERTY(VisibleInstanceOnly, Category = "Chat")
-	TSet<int64> ChannelIds;
+	TSet<UChatChannel*> ChatChannels;
 
 public:
 	/** The current channel that is selected */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int64 CurrentChannel;
+	UChatChannel* CurrentChannel;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chat", meta = (BindWidget))
 	UListView* ChatMessageList;
@@ -34,13 +35,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SendChatMessage(const FText& Text);
 
-	/** Required to be to initialize connection to chat servers. */
-	UFUNCTION()
-	void SetupChat(TSet<int64> SubscribedChannelIds);
+	/** Required to initialize connection to chat servers. */
+	UFUNCTION(BlueprintCallable)
+	void SetupChat(TSet<UChatChannel*> NewChatChannels, UChatChannel* NewCurrentChannel);
 
 	UFUNCTION(BlueprintCallable)
-	TSet<int64> GetChannelIds() { return ChannelIds; }
+	TSet<UChatChannel*> GetChatChannel() { return ChatChannels; }
 
+	UFUNCTION(BlueprintCallable)
+	TSet<int64> GetChatChannelIds();
+
+	UFUNCTION(BlueprintCallable)
+	UChatChannel* ConnectedToChannel(int64 ChannelId);
 
 private:
 	// Internal event handlers
@@ -50,5 +56,5 @@ private:
 	                               TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> Response, bool bWasSuccessful);
 
 	/** Chat message received from the server on a subscribed channel */
-	void OnChatMessageReceived(FChatMessageStruct ChatMessage, int64 ChannelId);
+	void OnChatMessageReceived(FChatMessageStruct ChatMessageStruct, int64 ChannelId);
 };

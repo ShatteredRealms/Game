@@ -84,12 +84,12 @@ void ASROLoginHUD::LoginCompleted() const
 {
 	if (LoginWidget->IsInViewport())
 	{
-		LoginWidget->RemoveFromViewport();
+		LoginWidget->RemoveFromParent();;
 	}
 
 	if (CreateCharacterWidget->IsInViewport())
 	{
-		CreateCharacterWidget->RemoveFromViewport();
+		CreateCharacterWidget->RemoveFromParent();;
 	}
 
 	if (!CharacterSelectorWidget->IsInViewport())
@@ -103,12 +103,12 @@ void ASROLoginHUD::LogoutCompleted() const
 {
 	if (CharacterSelectorWidget->IsInViewport())
 	{
-		CharacterSelectorWidget->RemoveFromViewport();
+		CharacterSelectorWidget->RemoveFromParent();;
 	}
 
 	if (CreateCharacterWidget->IsInViewport())
 	{
-		CreateCharacterWidget->RemoveFromViewport();
+		CreateCharacterWidget->RemoveFromParent();;
 	}
 
 	if (!LoginWidget->IsInViewport())
@@ -122,12 +122,12 @@ void ASROLoginHUD::CreateCharacter() const
 {
 	if (CharacterSelectorWidget->IsInViewport())
 	{
-		CharacterSelectorWidget->RemoveFromViewport();
+		CharacterSelectorWidget->RemoveFromParent();;
 	}
 
 	if (LoginWidget->IsInViewport())
 	{
-		LoginWidget->RemoveFromViewport();
+		LoginWidget->RemoveFromParent();;
 	}
 
 	if (!CreateCharacterWidget->IsInViewport())

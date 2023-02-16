@@ -31,21 +31,12 @@ EXIT /B 0
     set PROTO_H="%~n1.pb.h"
     set PROTO_OUTPUT_DIR=%OUTPUT_DIR%\%2
     
-    if [%2] == [] (
-        "%PROTOC_EXE%" ^
-           --cpp_out="%OUTPUT_DIR%" ^
-           --plugin=protoc-gen-grpc="%GRPC_CPP_EXE%" --grpc_out="%OUTPUT_DIR%" ^
-           -I "%PROTOS_THIRD_PARTY_DIR%" ^
-           -I "%PROTOS_DIR%" ^
-           "%~nx1"
-    ) else (
-        set NEW_OUT=%2
-        "%PROTOC_EXE%" ^
-           --cpp_out="%OUTPUT_DIR%" ^
-           -I"%PROTOS_THIRD_PARTY_DIR%" ^
-           -I"%PROTOS_DIR%" ^
-           "%PROTOS_THIRD_PARTY_DIR%\%2\%~nx1"
-    )
+    "%PROTOC_EXE%" ^
+        --cpp_out="%OUTPUT_DIR%" ^
+        --plugin=protoc-gen-grpc="%GRPC_CPP_EXE%" --grpc_out="%OUTPUT_DIR%" ^
+        -I "%PROTOS_THIRD_PARTY_DIR%" ^
+        -I "%PROTOS_DIR%" ^
+        "%1"
       
    pushd %PROTO_OUTPUT_DIR%
    

@@ -45,13 +45,13 @@ class ChatService final {
     std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>> PrepareAsyncConnectChannel(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>>(PrepareAsyncConnectChannelRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>> ConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request) {
+    std::unique_ptr< ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>> ConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request) {
       return std::unique_ptr< ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>>(ConnectDirectMessageRaw(context, request));
     }
-    std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>> AsyncConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq, void* tag) {
+    std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>> AsyncConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq, void* tag) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>>(AsyncConnectDirectMessageRaw(context, request, cq, tag));
     }
-    std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>> PrepareAsyncConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
+    std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>> PrepareAsyncConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>>(PrepareAsyncConnectDirectMessageRaw(context, request, cq));
     }
     virtual ::grpc::Status SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::google::protobuf::Empty* response) = 0;
@@ -103,11 +103,32 @@ class ChatService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>> PrepareAsyncAllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>>(PrepareAsyncAllChatChannelsRaw(context, request, cq));
     }
+    virtual ::grpc::Status GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::sro::chat::ChatChannels* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>> AsyncGetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>>(AsyncGetAuthorizedChatChannelsRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>> PrepareAsyncGetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>>(PrepareAsyncGetAuthorizedChatChannelsRaw(context, request, cq));
+    }
+    virtual ::grpc::Status AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncAuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncAuthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncAuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncAuthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    virtual ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::google::protobuf::Empty* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> AsyncDeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(AsyncDeauthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>> PrepareAsyncDeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>>(PrepareAsyncDeauthorizeUserForChatChannelRaw(context, request, cq));
+    }
     class async_interface {
      public:
       virtual ~async_interface() {}
       virtual void ConnectChannel(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) = 0;
-      virtual void ConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) = 0;
+      virtual void ConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) = 0;
       virtual void SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
       virtual void SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void SendDirectMessage(::grpc::ClientContext* context, const ::sro::chat::SendDirectMessageRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
@@ -122,6 +143,12 @@ class ChatService final {
       virtual void EditChannel(::grpc::ClientContext* context, const ::sro::chat::UpdateChatChannelRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void AllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::sro::chat::ChatChannels* response, std::function<void(::grpc::Status)>) = 0;
       virtual void AllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::sro::chat::ChatChannels* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) = 0;
     };
     typedef class async_interface experimental_async_interface;
     virtual class async_interface* async() { return nullptr; }
@@ -130,9 +157,9 @@ class ChatService final {
     virtual ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>* ConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request) = 0;
     virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* AsyncConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq, void* tag) = 0;
     virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* PrepareAsyncConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>* ConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request) = 0;
-    virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* AsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq, void* tag) = 0;
-    virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* PrepareAsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientReaderInterface< ::sro::chat::ChatMessage>* ConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request) = 0;
+    virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* AsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq, void* tag) = 0;
+    virtual ::grpc::ClientAsyncReaderInterface< ::sro::chat::ChatMessage>* PrepareAsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncSendChatMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncSendChatMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncSendDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendDirectMessageRequest& request, ::grpc::CompletionQueue* cq) = 0;
@@ -147,6 +174,12 @@ class ChatService final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncEditChannelRaw(::grpc::ClientContext* context, const ::sro::chat::UpdateChatChannelRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>* AsyncAllChatChannelsRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>* PrepareAsyncAllChatChannelsRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>* AsyncGetAuthorizedChatChannelsRaw(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::sro::chat::ChatChannels>* PrepareAsyncGetAuthorizedChatChannelsRaw(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncAuthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncAuthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* AsyncDeauthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::google::protobuf::Empty>* PrepareAsyncDeauthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -160,13 +193,13 @@ class ChatService final {
     std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>> PrepareAsyncConnectChannel(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>>(PrepareAsyncConnectChannelRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientReader< ::sro::chat::ChatMessage>> ConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request) {
+    std::unique_ptr< ::grpc::ClientReader< ::sro::chat::ChatMessage>> ConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request) {
       return std::unique_ptr< ::grpc::ClientReader< ::sro::chat::ChatMessage>>(ConnectDirectMessageRaw(context, request));
     }
-    std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>> AsyncConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq, void* tag) {
+    std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>> AsyncConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq, void* tag) {
       return std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>>(AsyncConnectDirectMessageRaw(context, request, cq, tag));
     }
-    std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>> PrepareAsyncConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
+    std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>> PrepareAsyncConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>>(PrepareAsyncConnectDirectMessageRaw(context, request, cq));
     }
     ::grpc::Status SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::google::protobuf::Empty* response) override;
@@ -218,11 +251,32 @@ class ChatService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>> PrepareAsyncAllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>>(PrepareAsyncAllChatChannelsRaw(context, request, cq));
     }
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::sro::chat::ChatChannels* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>> AsyncGetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>>(AsyncGetAuthorizedChatChannelsRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>> PrepareAsyncGetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>>(PrepareAsyncGetAuthorizedChatChannelsRaw(context, request, cq));
+    }
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncAuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncAuthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncAuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncAuthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::google::protobuf::Empty* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> AsyncDeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(AsyncDeauthorizeUserForChatChannelRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>> PrepareAsyncDeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>>(PrepareAsyncDeauthorizeUserForChatChannelRaw(context, request, cq));
+    }
     class async final :
       public StubInterface::async_interface {
      public:
       void ConnectChannel(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) override;
-      void ConnectDirectMessage(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) override;
+      void ConnectDirectMessage(::grpc::ClientContext* context, const ::sro::chat::CharacterName* request, ::grpc::ClientReadReactor< ::sro::chat::ChatMessage>* reactor) override;
       void SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
       void SendChatMessage(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void SendDirectMessage(::grpc::ClientContext* context, const ::sro::chat::SendDirectMessageRequest* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
@@ -237,6 +291,12 @@ class ChatService final {
       void EditChannel(::grpc::ClientContext* context, const ::sro::chat::UpdateChatChannelRequest* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
       void AllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::sro::chat::ChatChannels* response, std::function<void(::grpc::Status)>) override;
       void AllChatChannels(::grpc::ClientContext* context, const ::google::protobuf::Empty* request, ::sro::chat::ChatChannels* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response, std::function<void(::grpc::Status)>) override;
+      void GetAuthorizedChatChannels(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
+      void AuthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, std::function<void(::grpc::Status)>) override;
+      void DeauthorizeUserForChatChannel(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response, ::grpc::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit async(Stub* stub): stub_(stub) { }
@@ -251,9 +311,9 @@ class ChatService final {
     ::grpc::ClientReader< ::sro::chat::ChatMessage>* ConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request) override;
     ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* AsyncConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq, void* tag) override;
     ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* PrepareAsyncConnectChannelRaw(::grpc::ClientContext* context, const ::sro::chat::ChannelIdMessage& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientReader< ::sro::chat::ChatMessage>* ConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request) override;
-    ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* AsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq, void* tag) override;
-    ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* PrepareAsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientReader< ::sro::chat::ChatMessage>* ConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request) override;
+    ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* AsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq, void* tag) override;
+    ::grpc::ClientAsyncReader< ::sro::chat::ChatMessage>* PrepareAsyncConnectDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::CharacterName& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncSendChatMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncSendChatMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendChatMessageRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncSendDirectMessageRaw(::grpc::ClientContext* context, const ::sro::chat::SendDirectMessageRequest& request, ::grpc::CompletionQueue* cq) override;
@@ -268,6 +328,12 @@ class ChatService final {
     ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncEditChannelRaw(::grpc::ClientContext* context, const ::sro::chat::UpdateChatChannelRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>* AsyncAllChatChannelsRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>* PrepareAsyncAllChatChannelsRaw(::grpc::ClientContext* context, const ::google::protobuf::Empty& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>* AsyncGetAuthorizedChatChannelsRaw(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::sro::chat::ChatChannels>* PrepareAsyncGetAuthorizedChatChannelsRaw(::grpc::ClientContext* context, const ::sro::chat::RequestAuthorizedChatChannels& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncAuthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncAuthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* AsyncDeauthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::google::protobuf::Empty>* PrepareAsyncDeauthorizeUserForChatChannelRaw(::grpc::ClientContext* context, const ::sro::chat::RequestChatChannelAuthChange& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_ConnectChannel_;
     const ::grpc::internal::RpcMethod rpcmethod_ConnectDirectMessage_;
     const ::grpc::internal::RpcMethod rpcmethod_SendChatMessage_;
@@ -277,6 +343,9 @@ class ChatService final {
     const ::grpc::internal::RpcMethod rpcmethod_DeleteChannel_;
     const ::grpc::internal::RpcMethod rpcmethod_EditChannel_;
     const ::grpc::internal::RpcMethod rpcmethod_AllChatChannels_;
+    const ::grpc::internal::RpcMethod rpcmethod_GetAuthorizedChatChannels_;
+    const ::grpc::internal::RpcMethod rpcmethod_AuthorizeUserForChatChannel_;
+    const ::grpc::internal::RpcMethod rpcmethod_DeauthorizeUserForChatChannel_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -285,7 +354,7 @@ class ChatService final {
     Service();
     virtual ~Service();
     virtual ::grpc::Status ConnectChannel(::grpc::ServerContext* context, const ::sro::chat::ChannelIdMessage* request, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* writer);
-    virtual ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* context, const ::google::protobuf::Empty* request, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* writer);
+    virtual ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* context, const ::sro::chat::CharacterName* request, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* writer);
     virtual ::grpc::Status SendChatMessage(::grpc::ServerContext* context, const ::sro::chat::SendChatMessageRequest* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status SendDirectMessage(::grpc::ServerContext* context, const ::sro::chat::SendDirectMessageRequest* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status GetChannel(::grpc::ServerContext* context, const ::sro::chat::ChannelIdMessage* request, ::sro::chat::ChatChannel* response);
@@ -293,6 +362,9 @@ class ChatService final {
     virtual ::grpc::Status DeleteChannel(::grpc::ServerContext* context, const ::sro::chat::ChannelIdMessage* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status EditChannel(::grpc::ServerContext* context, const ::sro::chat::UpdateChatChannelRequest* request, ::google::protobuf::Empty* response);
     virtual ::grpc::Status AllChatChannels(::grpc::ServerContext* context, const ::google::protobuf::Empty* request, ::sro::chat::ChatChannels* response);
+    virtual ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response);
+    virtual ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response);
+    virtual ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_ConnectChannel : public BaseClass {
@@ -326,11 +398,11 @@ class ChatService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestConnectDirectMessage(::grpc::ServerContext* context, ::google::protobuf::Empty* request, ::grpc::ServerAsyncWriter< ::sro::chat::ChatMessage>* writer, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestConnectDirectMessage(::grpc::ServerContext* context, ::sro::chat::CharacterName* request, ::grpc::ServerAsyncWriter< ::sro::chat::ChatMessage>* writer, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncServerStreaming(1, context, request, writer, new_call_cq, notification_cq, tag);
     }
   };
@@ -474,7 +546,67 @@ class ChatService final {
       ::grpc::Service::RequestAsyncUnary(8, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_ConnectChannel<WithAsyncMethod_ConnectDirectMessage<WithAsyncMethod_SendChatMessage<WithAsyncMethod_SendDirectMessage<WithAsyncMethod_GetChannel<WithAsyncMethod_CreateChannel<WithAsyncMethod_DeleteChannel<WithAsyncMethod_EditChannel<WithAsyncMethod_AllChatChannels<Service > > > > > > > > > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodAsync(9);
+    }
+    ~WithAsyncMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestGetAuthorizedChatChannels(::grpc::ServerContext* context, ::sro::chat::RequestAuthorizedChatChannels* request, ::grpc::ServerAsyncResponseWriter< ::sro::chat::ChatChannels>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodAsync(10);
+    }
+    ~WithAsyncMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestAuthorizeUserForChatChannel(::grpc::ServerContext* context, ::sro::chat::RequestChatChannelAuthChange* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodAsync(11);
+    }
+    ~WithAsyncMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestDeauthorizeUserForChatChannel(::grpc::ServerContext* context, ::sro::chat::RequestChatChannelAuthChange* request, ::grpc::ServerAsyncResponseWriter< ::google::protobuf::Empty>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_ConnectChannel<WithAsyncMethod_ConnectDirectMessage<WithAsyncMethod_SendChatMessage<WithAsyncMethod_SendDirectMessage<WithAsyncMethod_GetChannel<WithAsyncMethod_CreateChannel<WithAsyncMethod_DeleteChannel<WithAsyncMethod_EditChannel<WithAsyncMethod_AllChatChannels<WithAsyncMethod_GetAuthorizedChatChannels<WithAsyncMethod_AuthorizeUserForChatChannel<WithAsyncMethod_DeauthorizeUserForChatChannel<Service > > > > > > > > > > > > AsyncService;
   template <class BaseClass>
   class WithCallbackMethod_ConnectChannel : public BaseClass {
    private:
@@ -504,20 +636,20 @@ class ChatService final {
    public:
     WithCallbackMethod_ConnectDirectMessage() {
       ::grpc::Service::MarkMethodCallback(1,
-          new ::grpc::internal::CallbackServerStreamingHandler< ::google::protobuf::Empty, ::sro::chat::ChatMessage>(
+          new ::grpc::internal::CallbackServerStreamingHandler< ::sro::chat::CharacterName, ::sro::chat::ChatMessage>(
             [this](
-                   ::grpc::CallbackServerContext* context, const ::google::protobuf::Empty* request) { return this->ConnectDirectMessage(context, request); }));
+                   ::grpc::CallbackServerContext* context, const ::sro::chat::CharacterName* request) { return this->ConnectDirectMessage(context, request); }));
     }
     ~WithCallbackMethod_ConnectDirectMessage() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual ::grpc::ServerWriteReactor< ::sro::chat::ChatMessage>* ConnectDirectMessage(
-      ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/)  { return nullptr; }
+      ::grpc::CallbackServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/)  { return nullptr; }
   };
   template <class BaseClass>
   class WithCallbackMethod_SendChatMessage : public BaseClass {
@@ -708,7 +840,88 @@ class ChatService final {
     virtual ::grpc::ServerUnaryReactor* AllChatChannels(
       ::grpc::CallbackServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::sro::chat::ChatChannels* /*response*/)  { return nullptr; }
   };
-  typedef WithCallbackMethod_ConnectChannel<WithCallbackMethod_ConnectDirectMessage<WithCallbackMethod_SendChatMessage<WithCallbackMethod_SendDirectMessage<WithCallbackMethod_GetChannel<WithCallbackMethod_CreateChannel<WithCallbackMethod_DeleteChannel<WithCallbackMethod_EditChannel<WithCallbackMethod_AllChatChannels<Service > > > > > > > > > CallbackService;
+  template <class BaseClass>
+  class WithCallbackMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodCallback(9,
+          new ::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestAuthorizedChatChannels, ::sro::chat::ChatChannels>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::sro::chat::RequestAuthorizedChatChannels* request, ::sro::chat::ChatChannels* response) { return this->GetAuthorizedChatChannels(context, request, response); }));}
+    void SetMessageAllocatorFor_GetAuthorizedChatChannels(
+        ::grpc::MessageAllocator< ::sro::chat::RequestAuthorizedChatChannels, ::sro::chat::ChatChannels>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(9);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestAuthorizedChatChannels, ::sro::chat::ChatChannels>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* GetAuthorizedChatChannels(
+      ::grpc::CallbackServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithCallbackMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodCallback(10,
+          new ::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response) { return this->AuthorizeUserForChatChannel(context, request, response); }));}
+    void SetMessageAllocatorFor_AuthorizeUserForChatChannel(
+        ::grpc::MessageAllocator< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(10);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* AuthorizeUserForChatChannel(
+      ::grpc::CallbackServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithCallbackMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodCallback(11,
+          new ::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::sro::chat::RequestChatChannelAuthChange* request, ::google::protobuf::Empty* response) { return this->DeauthorizeUserForChatChannel(context, request, response); }));}
+    void SetMessageAllocatorFor_DeauthorizeUserForChatChannel(
+        ::grpc::MessageAllocator< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(11);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* DeauthorizeUserForChatChannel(
+      ::grpc::CallbackServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/)  { return nullptr; }
+  };
+  typedef WithCallbackMethod_ConnectChannel<WithCallbackMethod_ConnectDirectMessage<WithCallbackMethod_SendChatMessage<WithCallbackMethod_SendDirectMessage<WithCallbackMethod_GetChannel<WithCallbackMethod_CreateChannel<WithCallbackMethod_DeleteChannel<WithCallbackMethod_EditChannel<WithCallbackMethod_AllChatChannels<WithCallbackMethod_GetAuthorizedChatChannels<WithCallbackMethod_AuthorizeUserForChatChannel<WithCallbackMethod_DeauthorizeUserForChatChannel<Service > > > > > > > > > > > > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_ConnectChannel : public BaseClass {
@@ -739,7 +952,7 @@ class ChatService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -864,6 +1077,57 @@ class ChatService final {
     }
   };
   template <class BaseClass>
+  class WithGenericMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodGeneric(9);
+    }
+    ~WithGenericMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodGeneric(10);
+    }
+    ~WithGenericMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodGeneric(11);
+    }
+    ~WithGenericMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
   class WithRawMethod_ConnectChannel : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -895,7 +1159,7 @@ class ChatService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1044,6 +1308,66 @@ class ChatService final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodRaw(9);
+    }
+    ~WithRawMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestGetAuthorizedChatChannels(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(9, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodRaw(10);
+    }
+    ~WithRawMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestAuthorizeUserForChatChannel(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(10, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodRaw(11);
+    }
+    ~WithRawMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestDeauthorizeUserForChatChannel(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(11, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawCallbackMethod_ConnectChannel : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -1080,7 +1404,7 @@ class ChatService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -1239,6 +1563,72 @@ class ChatService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual ::grpc::ServerUnaryReactor* AllChatChannels(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodRawCallback(9,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetAuthorizedChatChannels(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* GetAuthorizedChatChannels(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodRawCallback(10,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->AuthorizeUserForChatChannel(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* AuthorizeUserForChatChannel(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodRawCallback(11,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->DeauthorizeUserForChatChannel(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* DeauthorizeUserForChatChannel(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
@@ -1430,7 +1820,88 @@ class ChatService final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedAllChatChannels(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::google::protobuf::Empty,::sro::chat::ChatChannels>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_SendChatMessage<WithStreamedUnaryMethod_SendDirectMessage<WithStreamedUnaryMethod_GetChannel<WithStreamedUnaryMethod_CreateChannel<WithStreamedUnaryMethod_DeleteChannel<WithStreamedUnaryMethod_EditChannel<WithStreamedUnaryMethod_AllChatChannels<Service > > > > > > > StreamedUnaryService;
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_GetAuthorizedChatChannels : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_GetAuthorizedChatChannels() {
+      ::grpc::Service::MarkMethodStreamed(9,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::sro::chat::RequestAuthorizedChatChannels, ::sro::chat::ChatChannels>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::sro::chat::RequestAuthorizedChatChannels, ::sro::chat::ChatChannels>* streamer) {
+                       return this->StreamedGetAuthorizedChatChannels(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_GetAuthorizedChatChannels() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status GetAuthorizedChatChannels(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestAuthorizedChatChannels* /*request*/, ::sro::chat::ChatChannels* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedGetAuthorizedChatChannels(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::sro::chat::RequestAuthorizedChatChannels,::sro::chat::ChatChannels>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_AuthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_AuthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodStreamed(10,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>* streamer) {
+                       return this->StreamedAuthorizeUserForChatChannel(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_AuthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status AuthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedAuthorizeUserForChatChannel(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::sro::chat::RequestChatChannelAuthChange,::google::protobuf::Empty>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_DeauthorizeUserForChatChannel : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_DeauthorizeUserForChatChannel() {
+      ::grpc::Service::MarkMethodStreamed(11,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::sro::chat::RequestChatChannelAuthChange, ::google::protobuf::Empty>* streamer) {
+                       return this->StreamedDeauthorizeUserForChatChannel(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_DeauthorizeUserForChatChannel() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status DeauthorizeUserForChatChannel(::grpc::ServerContext* /*context*/, const ::sro::chat::RequestChatChannelAuthChange* /*request*/, ::google::protobuf::Empty* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedDeauthorizeUserForChatChannel(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::sro::chat::RequestChatChannelAuthChange,::google::protobuf::Empty>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_SendChatMessage<WithStreamedUnaryMethod_SendDirectMessage<WithStreamedUnaryMethod_GetChannel<WithStreamedUnaryMethod_CreateChannel<WithStreamedUnaryMethod_DeleteChannel<WithStreamedUnaryMethod_EditChannel<WithStreamedUnaryMethod_AllChatChannels<WithStreamedUnaryMethod_GetAuthorizedChatChannels<WithStreamedUnaryMethod_AuthorizeUserForChatChannel<WithStreamedUnaryMethod_DeauthorizeUserForChatChannel<Service > > > > > > > > > > StreamedUnaryService;
   template <class BaseClass>
   class WithSplitStreamingMethod_ConnectChannel : public BaseClass {
    private:
@@ -1466,10 +1937,10 @@ class ChatService final {
     WithSplitStreamingMethod_ConnectDirectMessage() {
       ::grpc::Service::MarkMethodStreamed(1,
         new ::grpc::internal::SplitServerStreamingHandler<
-          ::google::protobuf::Empty, ::sro::chat::ChatMessage>(
+          ::sro::chat::CharacterName, ::sro::chat::ChatMessage>(
             [this](::grpc::ServerContext* context,
                    ::grpc::ServerSplitStreamer<
-                     ::google::protobuf::Empty, ::sro::chat::ChatMessage>* streamer) {
+                     ::sro::chat::CharacterName, ::sro::chat::ChatMessage>* streamer) {
                        return this->StreamedConnectDirectMessage(context,
                          streamer);
                   }));
@@ -1478,15 +1949,15 @@ class ChatService final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::google::protobuf::Empty* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
+    ::grpc::Status ConnectDirectMessage(::grpc::ServerContext* /*context*/, const ::sro::chat::CharacterName* /*request*/, ::grpc::ServerWriter< ::sro::chat::ChatMessage>* /*writer*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with split streamed
-    virtual ::grpc::Status StreamedConnectDirectMessage(::grpc::ServerContext* context, ::grpc::ServerSplitStreamer< ::google::protobuf::Empty,::sro::chat::ChatMessage>* server_split_streamer) = 0;
+    virtual ::grpc::Status StreamedConnectDirectMessage(::grpc::ServerContext* context, ::grpc::ServerSplitStreamer< ::sro::chat::CharacterName,::sro::chat::ChatMessage>* server_split_streamer) = 0;
   };
   typedef WithSplitStreamingMethod_ConnectChannel<WithSplitStreamingMethod_ConnectDirectMessage<Service > > SplitStreamedService;
-  typedef WithSplitStreamingMethod_ConnectChannel<WithSplitStreamingMethod_ConnectDirectMessage<WithStreamedUnaryMethod_SendChatMessage<WithStreamedUnaryMethod_SendDirectMessage<WithStreamedUnaryMethod_GetChannel<WithStreamedUnaryMethod_CreateChannel<WithStreamedUnaryMethod_DeleteChannel<WithStreamedUnaryMethod_EditChannel<WithStreamedUnaryMethod_AllChatChannels<Service > > > > > > > > > StreamedService;
+  typedef WithSplitStreamingMethod_ConnectChannel<WithSplitStreamingMethod_ConnectDirectMessage<WithStreamedUnaryMethod_SendChatMessage<WithStreamedUnaryMethod_SendDirectMessage<WithStreamedUnaryMethod_GetChannel<WithStreamedUnaryMethod_CreateChannel<WithStreamedUnaryMethod_DeleteChannel<WithStreamedUnaryMethod_EditChannel<WithStreamedUnaryMethod_AllChatChannels<WithStreamedUnaryMethod_GetAuthorizedChatChannels<WithStreamedUnaryMethod_AuthorizeUserForChatChannel<WithStreamedUnaryMethod_DeauthorizeUserForChatChannel<Service > > > > > > > > > > > > StreamedService;
 };
 
 }  // namespace chat

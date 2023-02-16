@@ -11,6 +11,8 @@ public class SRO : ModuleRules
 
 	public SRO(ReadOnlyTargetRules Target) : base(Target)
 	{
+		CppStandard = CppStandardVersion.Cpp20;
+		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnableExceptions = true;
 		SROPlatformInstance = GetSROPlatformInstance(Target);

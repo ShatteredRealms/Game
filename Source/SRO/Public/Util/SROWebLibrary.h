@@ -48,6 +48,9 @@ public:
 	static FString GetAPIUrl();
 	
 	UFUNCTION(BlueprintCallable)
+	static FString GetGRPCAPIUrl();
+	
+	UFUNCTION(BlueprintCallable)
 	static FString GetGameBackendAPIUrl();
 	
 	UFUNCTION(BlueprintCallable)

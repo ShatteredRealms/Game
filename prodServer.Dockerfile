@@ -15,4 +15,4 @@ USER server
 
 EXPOSE 7777/udp
 
-ENTRYPOINT ["/home/server/server/SROServer.sh"]
+ENTRYPOINT ["/home/server/server/SROServer.sh", "-log"]

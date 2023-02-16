@@ -16,11 +16,12 @@ class SRO_API ASROPlayerController : public ASROOfflineController
 {
 	GENERATED_BODY()
 
+	USROChatService* ChatService;
+	
 public:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere)
-	USROChatService* ChatService;
+	USROChatService* GetChatService();
 };
 
 

@@ -33,7 +33,7 @@
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
-#include "pb/google/api/annotations.pb.h"
+#include "google/api/annotations.pb.h"
 #include <google/protobuf/empty.pb.h>
 #include <google/protobuf/wrappers.pb.h>
 // @@protoc_insertion_point(includes)

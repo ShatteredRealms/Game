@@ -18,7 +18,20 @@ void ASROPlayerController::BeginPlay()
 
 	if (IsLocalPlayerController())
 	{
-		ChatService = NewObject<USROChatService>();
-		ChatService->ConnectToChannel(1, AuthToken);
+		UChatChannel* ChatChannel = NewObject<UChatChannel>();
+		ChatChannel->Struct.Id = 1;
+		ChatChannel->Struct.Name = "All";
+		GetChatService()->ConnectToChannel(ChatChannel, AuthToken);
 	}
+}
+
+USROChatService* ASROPlayerController::GetChatService()
+{
+	if (ChatService)
+	{
+		return ChatService;
+	}
+	
+	ChatService = NewObject<USROChatService>();
+	return ChatService;
 }

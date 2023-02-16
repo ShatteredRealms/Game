@@ -13,5 +13,10 @@ UCLASS()
 class SRO_API ASROPlayerState : public APlayerState
 {
 	GENERATED_BODY()
+
+	ASROPlayerState();
 	
+	virtual void BeginPlay() override;
+
+	virtual FString GetPlayerNameCustom() const override;
 };

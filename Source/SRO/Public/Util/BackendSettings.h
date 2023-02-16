@@ -15,6 +15,9 @@ class SRO_API UBackendSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Web")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "SRO API")
 	FString APIUrl;
+	
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "SRO API")
+	FString GRPCAPIUrl;
 };

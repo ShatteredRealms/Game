@@ -13,49 +13,55 @@ FString USROWebLibrary::GetAPIUrl()
 	return Settings->APIUrl;
 }
 
+FString USROWebLibrary::GetGRPCAPIUrl()
+{
+	const UBackendSettings* Settings = GetDefault<UBackendSettings>();
+	return Settings->GRPCAPIUrl;
+}
+
 FString USROWebLibrary::GetGameBackendAPIUrl()
 {
-// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
 	return "localhost:8082/v1";
-// #else
-	// return GetAPIUrl()+"/gamebackend/v1";
-// #endif
+#else
+	return GetAPIUrl()+"/gamebackend/v1";
+#endif
 }
 
 FString USROWebLibrary::GetCharactersAPIUrl()
 {
-// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
-// 	return "localhost:8081/v1";
-// #else
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "localhost:8081/v1";
+#else
 	return GetAPIUrl()+"/characters/v1";
-// #endif
+#endif
 }
 
 FString USROWebLibrary::GetAccountsAPIUrl()
 {
-// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
-// 	return "localhost:8080/v1";
-// #else
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "localhost:8080/v1";
+#else
 	return GetAPIUrl()+"/accounts/v1";
-// #endif
+#endif
 }
 
 FString USROWebLibrary::GetChatAPIUrl()
 {
-// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
-// 	return "localhost:8180/v1";
-// #else
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "localhost:8180/v1";
+#else
 	return GetAPIUrl()+"/chat/v1";
-// #endif
+#endif
 }
 
 FString USROWebLibrary::GetChatGRPCUrl()
 {
-// #if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
-// 	return "localhost:8180";
-// #else
-	return GetAPIUrl()+"/chat";
-// #endif
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+	return "localhost:8180";
+#else
+	return "chat."+GetGRPCAPIUrl()+":8180";
+#endif
 }
 
 void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,

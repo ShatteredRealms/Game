@@ -20,9 +20,6 @@ void USROCharactersWebLibrary::Connect(int32 CharacterId, FString AuthToken,
 		)
 	);
 
-	UE_LOG(LogSRO, Display, TEXT("URL: %s"), &Url);
-	UE_LOG(LogSRO, Display, TEXT("Body: %s"), &Url);
-	
 	USROWebLibrary::ProcessAuthRequest(Request, Url, "GET", "", AuthToken);	
 }
 
