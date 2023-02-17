@@ -1,14 +1,9 @@
 // Copyright Shattered Realms Online All Rights Reserved
 
 #include "Chat/SROChatService.h"
-#include "Chat/ConnectChatTask.h"
+#include "Chat/ChatChannelWorker.h"
 #include "SRO/SRO.h"
 #include "SRO/SROGameInstance.h"
-
-USROChatService::USROChatService()
-{
-	ChatMessageReceivedDelegate.AddUObject(this, &USROChatService::OnChatMessageReceived);
-}
 
 void USROChatService::OnChatMessageReceived(FChatMessageStruct Message, int64 ChannelId)
 {
@@ -20,15 +15,17 @@ void USROChatService::OnChatMessageReceived(FChatMessageStruct Message, int64 Ch
 	}
 
 	ChatChannel->Messages.Add(Message);
+	ChatMessageReceivedDelegate.Broadcast(Message, ChannelId);
 }
 
 bool USROChatService::ConnectToChannel(UChatChannel* ChatChannel, FString AuthToken)
 {
 	if (ConnectedToChannel(ChatChannel->Struct.Id)) return false;
 
-	(new FAutoDeleteAsyncTask<FConnectChatTask>(ChatChannel->Struct.Id, "", AuthToken, &ChatMessageReceivedDelegate))->
-		StartBackgroundTask();
-	
+	TSharedPtr<FChatChannelWorker, ESPMode::ThreadSafe> Worker = MakeShared<FChatChannelWorker>(
+		ChatChannel->Struct.Id, "", AuthToken);
+	Worker->OnChatMessageReceived().AddUObject(this, &USROChatService::OnChatMessageReceived);
+	Workers.Add(Worker);
 	ConnectedChannels.Add(ChatChannel);
 	return true;
 }
@@ -46,8 +43,11 @@ bool USROChatService::ConnectDirectMessages(FString AuthToken)
 	if (!BGI) return false;
 	USROGameInstance* GI = Cast<USROGameInstance>(BGI);
 	if (!GI) return false;
-	
-	(new FAutoDeleteAsyncTask<FConnectChatTask>(0, GI->SelectedCharacterName, AuthToken, &ChatMessageReceivedDelegate))->StartBackgroundTask();
+
+	TSharedPtr<FChatChannelWorker, ESPMode::ThreadSafe> Worker = MakeShared<FChatChannelWorker>(
+		ChatChannel->Struct.Id, GI->SelectedCharacterName, AuthToken);
+	Worker->OnChatMessageReceived().AddUObject(this, &USROChatService::OnChatMessageReceived);
+	Workers.Add(Worker);
 	ConnectedChannels.Add(ChatChannel);
 	return true;
 }
@@ -93,4 +93,15 @@ void USROChatService::GetChatMessages(TSet<int64> ChannelIds, TArray<FChatMessag
 			Result.Append(ChatChannel->Messages);
 		}
 	}
+}
+
+void USROChatService::Shutdown()
+{
+	ConnectedChannels.Empty();
+	
+	for (const auto Worker : Workers)
+	{
+		Worker->Stop();
+	}
+	Workers.Empty();
 }

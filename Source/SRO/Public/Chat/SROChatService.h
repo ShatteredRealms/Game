@@ -8,8 +8,8 @@
 #include "CoreMinimal.h"
 #include "chat.grpc.pb.h"
 #include "ChatChannel.h"
+#include "ChatChannelWorker.h"
 #include "ChatMessage.h"
-#include "../../../../Intermediate/ProjectFiles/ThirdParty/grpc/include/grpcpp/create_channel.h"
 #include "UObject/NoExportTypes.h"
 #include "SROChatService.generated.h"
 
@@ -23,6 +23,8 @@ using sro::chat::ChatMessage;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FChatMessageReceivedDelegate, FChatMessageStruct, int64)
 
+class FChatChannelWorker;
+
 /**
  * 
  */
@@ -30,17 +32,14 @@ UCLASS(Blueprintable)
 class SRO_API USROChatService : public UObject
 {
 	GENERATED_BODY()
-
-	USROChatService();
 	
-private:
 	/** Set of connected chat channel ids */
 	UPROPERTY()
 	TSet<UChatChannel*> ConnectedChannels;
 
-
-	void OnChatMessageReceived(FChatMessageStruct Message, int64 ChannelId);
+	TArray<TSharedPtr<FChatChannelWorker, ESPMode::ThreadSafe>> Workers;
 	
+	void OnChatMessageReceived(FChatMessageStruct Message, int64 ChannelId);
 public:
 	/** The character name used when sending messages */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -73,4 +72,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void GetChatMessages(TSet<int64> ChannelIds, TArray<FChatMessageStruct>& Result);
+
+	UFUNCTION(BlueprintCallable)
+	void Shutdown();
 };

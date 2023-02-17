@@ -5,6 +5,7 @@
 
 #include "HttpModule.h"
 #include "SRO/SRO.h"
+#include "SRO/SROGameInstance.h"
 #include "SRO/SROPlayerController.h"
 #include "Util/SROChatWebLibrary.h"
 #include "Util/SROWebLibrary.h"
@@ -51,8 +52,10 @@ void UChatBoxWidget::SendChatMessage(const FText& Text)
 	const auto Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &UChatBoxWidget::OnSendChatMessageResponse);
 
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI) return;
 	
-	USROChatWebLibrary::SendChatMessage(Text, CurrentChannel->Struct.Id, PC->AuthToken, Request);
+	USROChatWebLibrary::SendChatMessage(GI->SelectedCharacterName, Text, CurrentChannel->Struct.Id, PC->AuthToken, Request);
 }
 
 void UChatBoxWidget::OnSendChatMessageResponse(TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> Request,

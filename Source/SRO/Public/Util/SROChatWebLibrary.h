@@ -17,5 +17,6 @@ class USROChatWebLibrary : public UBlueprintFunctionLibrary
 	
 public:
 	/** Sends a chat message using the Web API */
-	static void SendChatMessage(const FText& Message, int64 ChannelId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
+	static void SendChatMessage(const ::FString& CharacterName, const ::FText& Message, FPlatformTypes::int64 ChannelId, ::FString AuthToken, TSharedRef
+	                            <IHttpRequest, ESPMode::ThreadSafe> Request);
 };

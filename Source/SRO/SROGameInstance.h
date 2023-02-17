@@ -17,4 +17,6 @@ class SRO_API USROGameInstance : public UGameInstance
 
 public:	
 	FString SelectedCharacterName;
+
+	virtual void Shutdown() override;
 };
