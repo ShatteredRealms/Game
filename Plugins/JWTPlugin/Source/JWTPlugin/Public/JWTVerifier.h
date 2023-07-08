@@ -39,6 +39,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Verify JWT", Keywords = "JWT"), Category = "JWT")
 	bool VerifyJWT(const FString& Input);
+	
 private:
     jwt::verifier<jwt::default_clock,jwt::picojson_traits> Verifier = jwt::verify();
 };

@@ -11,7 +11,9 @@ public class SRO : ModuleRules
 
 	public SRO(ReadOnlyTargetRules Target) : base(Target)
 	{
-		CppStandard = CppStandardVersion.Cpp20;
+		PrivateDependencyModuleNames.AddRange(new string[] { "OculusEditor" });
+		CppStandard = CppStandardVersion.Cpp17;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnableExceptions = true;
@@ -43,6 +45,7 @@ public class SRO : ModuleRules
 			"JWTPlugin",
 			"ChunkDownloader",
 			"Serialization",
+			"TurboLinkGrpc"
 		});
 
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
@@ -55,7 +58,7 @@ public class SRO : ModuleRules
 				Path.Combine(ThirdPartyRoot(), "protobuf/include"),
 				Path.Combine(ThirdPartyRoot(), "grpc/include"),
 				Path.Combine(ThirdPartyRoot(), "abseil/include"),
-				Path.Combine(ModuleDirectory, "Private/pb")
+				// Path.Combine(ModuleDirectory, "Private/pb")
 			}
 		);
 

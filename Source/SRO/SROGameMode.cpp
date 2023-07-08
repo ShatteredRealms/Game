@@ -11,11 +11,13 @@
 #include "SROGameState.h"
 #include "SROPlayerController.h"
 #include "SROPlayerState.h"
+#include "TurboLinkGrpcConfig.h"
+#include "TurboLinkGrpcManager.h"
+#include "TurboLinkGrpcUtilities.h"
 #include "GameFramework/HUD.h"
-#include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
-#include "UObject/ConstructorHelpers.h"
-#include "Util/SROCharactersWebLibrary.h"
+#include "Misc/TypeContainer.h"
+#include "SSroGamebackend/ConnectionService.h"
 #include "Util/SROWebLibrary.h"
 
 ASROGameMode::ASROGameMode()
@@ -42,14 +44,8 @@ ASROGameMode::ASROGameMode()
 	GameSessionClass = ASROGameSession::StaticClass();
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
-
-#pragma push_macro("GetEnvironmentVariable")
-#undef GetEnvironmentVariable
-	FBase64::Decode(FPlatformMisc::GetEnvironmentVariable(TEXT("JWT_PUBLIC_KEY")), JWTPublicKey);
-	FBase64::Decode(FPlatformMisc::GetEnvironmentVariable(TEXT("JWT_PRIVATE_KEY")), JWTPrivateKey);
-#pragma pop_macro("GetEnvironmentVariable")
 	
-	JWTVerifier = UJWTPluginBPLibrary::CreateVerifier(JWTPublicKey, EAlgorithm::rs256);
+	Keycloak = NewObject<UKeycloak>();
 }
 
 UAgonesComponent* ASROGameMode::GetAgonesSDK(UObject* WorldContextObject)
@@ -62,16 +58,64 @@ UAgonesComponent* ASROGameMode::GetAgonesSDK(UObject* WorldContextObject)
 	return nullptr;
 }
 
-void ASROGameMode::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
-                                                       bool bWasSuccessful)
+void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
-	TSharedPtr<FJsonObject> JsonObject;
-	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject);
-
-	FRegexMatcher Matcher(FRegexPattern(".users\\/(\\d+)\\/."), Response->GetURL());
-	int32 UserId = FCString::Atoi(*Matcher.GetCaptureGroup(1));
+	Super::InitGame(MapName, Options, ErrorMessage);
 	
-	PendingConnections.Emplace(UserId, Message == TEXT("") ? ACCEPTED : REJECTED);
+	// Get the server Name
+#if UE_BUILD_DEVELOPMENT
+	ServerName = "localhost";
+#else
+	FGameServerDelegate GameServerSuccessDelegate;
+	GameServerSuccessDelegate.BindDynamic(this, &ASROGameMode::OneGameServerDetailsReceived);
+	AgonesSDK->GameServer(GameServerSuccessDelegate, {});
+#endif
+
+	// Setup keycloak
+	Keycloak->OnKeycloakError().BindUObject(this, &ASROGameMode::OnKeycloakError);
+	Keycloak->OnRefreshAuthToken().BindUObject(this, &ASROGameMode::UpdateAuthTokens);
+	Keycloak->UpdateJWKs();
+	
+	GetWorldTimerManager().SetTimer(
+		TokenRefreshTimerHandle,
+		this,
+		&ASROGameMode::RequestUpdateTokens,
+		60.f,
+		true,
+		60.f);
+
+	ASROGameSession* GS = Cast<ASROGameSession>(GameSession);
+	check(GS)
+	const auto Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &ASROGameMode::OnServerCredentialsReceived);
+	Keycloak->ClientLogin(GS->GetAuthClientId(), GS->GetAuthClientSecret(), Request);
+
+	// Setup TLM
+	auto TLM = UTurboLinkGrpcUtilities::GetTurboLinkGrpcManager(GetWorld());
+	if (!TLM)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to load TurboLink GRPC Utilities"));
+		return;
+	}
+
+	// Setup connection service
+	auto ConnectionService = Cast<UConnectionService>(TLM->MakeService("ConnectionService"));
+	if (!ConnectionService)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to create connection service"));
+		return;
+	}
+
+	ConnectionServiceClient = ConnectionService->MakeClient();
+	ConnectionServiceClient->OnVerifyConnectResponse.AddUniqueDynamic(this, &ASROGameMode::OnVerifyConnectResponseReceived);
+
+#if UE_BUILD_DEVELOPMENT
+	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceDev")));
+#else
+	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
+#endif
+
+	
 }
 
 
@@ -79,60 +123,48 @@ void ASROGameMode::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePt
 void ASROGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
 	FString& ErrorMessage)
 {
-	FString AuthToken = UGameplayStatics::ParseOption(Options, TEXT("t"));
-
-	if (AuthToken.IsEmpty())
+	// Check the connection token
+	FString ConnectionToken = UGameplayStatics::ParseOption(Options, TEXT("t"));
+	if (ConnectionToken.IsEmpty())
 	{
-		ErrorMessage = TEXT("No auth token given");
+		ErrorMessage = TEXT("No connection token given");
 		return;
 	}
 
-	FString CharacterName = UGameplayStatics::ParseOption(Options, TEXT("c"));
-	
-	if (CharacterName.IsEmpty())
-	{
-		ErrorMessage = TEXT("No character name given");
-		return;
-	}
-	
-	//
-	// if (!ValidateAuthToken(AuthToken, CharacterName))
+	auto Handle = ConnectionServiceClient->InitVerifyConnect();
+	FGrpcSroGamebackendVerifyConnectRequest Request;
+	Request.ConnectionId = ConnectionToken;
+	Request.ServerName = ServerName;
+	const FPendingConnection PendingConnection{Options, Address, UniqueId};
+	PendingConnections.Add(Handle, PendingConnection);
+	ConnectionServiceClient->VerifyConnect(Handle, Request, AuthToken);
+
+	// while (PendingConnections.Find(Handle)->Status == CONNECTING)
 	// {
-	// 	ErrorMessage = TEXT("Not authorized");;
+	// 	FGenericPlatformProcess::ConditionalSleep([this, Handle]
+	// 	{
+	// 		return PendingConnections.Find(Handle)->Status == CONNECTING;
+	// 	}, 0.0);
+	// }
+
+	// auto PendingConnection = PendingConnections.Find(Handle);
+	// if (PendingConnection->Status == REJECTED)
+	// {
+	// 	ErrorMessage = TEXT("Connection rejected");
 	// 	return;
 	// }
 
-	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	// Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
-APlayerController* ASROGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal,
-	const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-{
-	APlayerController* defaultPC = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
-	ASROPlayerController* PC = Cast<ASROPlayerController>(defaultPC);
-	
-	if (PC)
-	{
-		PC->SetName(UGameplayStatics::ParseOption(Options, TEXT("c")));
-		PC->AuthToken = UGameplayStatics::ParseOption(Options, TEXT("t"));
-	}
-	else
-	{
-		ErrorMessage = TEXT("Unable to cast player controller");
-		return nullptr;
-	}
-	
-	return PC;
-}
-
-APlayerController* ASROGameMode::SpawnPlayerController(ENetRole InRemoteRole, const FString& Options)
+APlayerController* ASROGameMode::SpawnPlayerControllerCommon(ENetRole InRemoteRole, FVector const& SpawnLocation,
+	FRotator const& SpawnRotation, TSubclassOf<APlayerController> InPlayerControllerClass)
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Instigator = GetInstigator();
 	SpawnInfo.ObjectFlags |= RF_Transient;	// We never want to save player controllers into a map
 	SpawnInfo.bDeferConstruction = true;
-	ASROPlayerController* NewPC = GetWorld()->SpawnActor<ASROPlayerController>(PlayerControllerClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnInfo);
-
+	APlayerController* NewPC = GetWorld()->SpawnActor<APlayerController>(InPlayerControllerClass, SpawnLocation, SpawnRotation, SpawnInfo);
 	if (NewPC)
 	{
 		if (InRemoteRole == ROLE_SimulatedProxy)
@@ -140,71 +172,121 @@ APlayerController* ASROGameMode::SpawnPlayerController(ENetRole InRemoteRole, co
 			// This is a local player because it has no authority/autonomous remote role
 			NewPC->SetAsLocalPlayerController();
 		}
-		else
-		{
-			NewPC->AuthToken = RenewAuthToken(UGameplayStatics::ParseOption(Options, TEXT("t")));
-		}
 
-		UGameplayStatics::FinishSpawningActor(NewPC, FTransform(FRotator::ZeroRotator, FVector::ZeroVector));
+		UGameplayStatics::FinishSpawningActor(NewPC, FTransform(SpawnRotation, SpawnLocation));
 	}
 
 	return NewPC;
 }
 
-bool ASROGameMode::ValidateAuthToken(const FString& Token, const FString& CharacterName)
+FString ASROGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId,
+                                    const FString& Options, const FString& Portal)
 {
-	if (!JWTVerifier->VerifyJWT(Token))
+	auto CharacterDetails = AcceptedConnections.Find(UniqueId);
+	if (!CharacterDetails)
 	{
-		UE_LOG(LogSRO, Warning, TEXT("Invalid token in login request for %s"), *CharacterName)
-		return false;
+		return FString(TEXT("Connection not expected"));
 	}
 	
-	auto Claims = UJWTPluginBPLibrary::GetClaims(Token);
-	const FString Sub = *Claims.Find("sub");
-	int32 UserId = FCString::Atoi(*Sub);
+	check(NewPlayerController);
+
+	// The player needs a PlayerState to register successfully
+	if (NewPlayerController->PlayerState == nullptr)
+	{
+		return FString(TEXT("PlayerState is null"));
+	}
+
+	// Register the player with the session
+	GameSession->RegisterPlayer(NewPlayerController, UniqueId, false);
+
+	// Change the name
+	ChangeName(NewPlayerController, CharacterDetails->Name, false);
 	
-	const auto Request = FHttpModule::Get().CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &ASROGameMode::OnCharactersReceived);
+	// Set the position
+	FString ErrorMessage;
+	if (!CharacterDetails->Location)
+	{
+		if (!UpdatePlayerStartSpot(NewPlayerController, Portal, ErrorMessage))
+		{
+			UE_LOG(LogGameMode, Warning, TEXT("InitNewPlayer: %s"), *ErrorMessage);
+		}
+	}
+	else
+	{
+		FRotator StartRotation(0, 0, 0);
+		FVector Location(CharacterDetails->Location->X, CharacterDetails->Location->Y, CharacterDetails->Location->Z);
+		NewPlayerController->SetInitialLocationAndRotation(Location, StartRotation);
+	}
 
-	PendingConnections.Emplace(UserId, CONNECTING);
-	USROCharactersWebLibrary::GetCharacters(UserId, Token, Request);
+	AcceptedConnections.Remove(UniqueId);
 
-	FGenericPlatformProcess::ConditionalSleep([&]{ return PendingConnections.Find(UserId)->GetValue() != CONNECTING; }, 100);
-
-	return PendingConnections.Find(UserId)->GetValue() != REJECTED;
+	return ErrorMessage;
 }
 
-FString ASROGameMode::RenewAuthToken(const FString& OldAuthToken)
+void ASROGameMode::OnKeycloakError(const FString& Error)
 {
-	
-	if (!JWTVerifier->VerifyJWT(OldAuthToken))
-	{
-		UE_LOG(LogSRO, Warning, TEXT("Invalid token to refresh."))
-		return "";
-	}
-	
-	auto OldClaims = UJWTPluginBPLibrary::GetClaims(OldAuthToken);
-	
-	auto JwtGenerator = UJWTPluginBPLibrary::CreateGenerator();
-	JwtGenerator->AddClaims(OldClaims);
-	JwtGenerator->AddClaim("iss", "gameserver.shatteredrealmsonline.com");
-	JwtGenerator->ExpireAt(60*60);
-	
-	FString Jwt;
-	
-	JwtGenerator->GenerateToken(JWTPrivateKey, EAlgorithm::rs256, true, Jwt);
-	
-	return Jwt;
+	UE_LOG(LogSRO, Warning, TEXT("keycloak: %s"), *Error);
 }
 
-int32 ASROGameMode::GetAuthTokenSubject(const FString& AuthToken)
+void ASROGameMode::OnVerifyConnectResponseReceived(
+	FGrpcContextHandle Handle,
+	const FGrpcResult& GrpcResult,
+	const FGrpcSroCharactersCharacterDetails& Response)
 {
-	if (!JWTVerifier->VerifyJWT(AuthToken))
-	{
-		return -1;
-	}
+	const auto PendingConnection = PendingConnections.Find(Handle);
+	FString ErrorMessage = GrpcResult.Message;
 	
-	auto Claims = UJWTPluginBPLibrary::GetClaims(AuthToken);
-	const FString Sub = *Claims.Find("sub");
-	return FCString::Atoi(*Sub);
+	if (!PendingConnection)
+	{
+		ErrorMessage = "Unable to find verification handle";
+	}
+	else
+	{
+		if (!GrpcResult.Message.Equals("") || GrpcResult.Code != EGrpcResultCode::Ok)
+		{
+			ErrorMessage = GrpcResult.Message;
+		}
+		else
+		{
+			AcceptedConnections.Add(PendingConnection->UniqueId, Response);
+		}
+	}
+
+	PendingConnections.Remove(Handle);
+	
+	Super::PreLogin(PendingConnection->Options, PendingConnection->Address, PendingConnection->UniqueId, ErrorMessage);
+}
+
+void ASROGameMode::OneGameServerDetailsReceived(const FGameServerResponse& Response)
+{
+	ServerName = Response.ObjectMeta.Name;
+}
+
+void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	TSharedPtr<FJsonObject> JsonObject;
+	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject); 
+	if (Message != TEXT(""))
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get server client credentials"))
+		return;
+	}
+
+	AuthToken = JsonObject->GetStringField("access_token");
+	RefreshToken = JsonObject->GetStringField("refresh_token");
+}
+
+void ASROGameMode::UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken)
+{
+	AuthToken = NewAuthToken;
+	RefreshToken = NewRefreshToken;
+}
+
+void ASROGameMode::RequestUpdateTokens()
+{
+	if (!RefreshToken.IsEmpty())
+	{
+		UE_LOG(LogSRO, Display, TEXT("Requesting new auth tokens"));
+		Keycloak->RefreshAuthToken(RefreshToken);
+	}
 }

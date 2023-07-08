@@ -3,9 +3,10 @@
 
 #include "Offline/SROOfflineController.h"
 
+#include "Auth/Keycloak/Keycloak.h"
 #include "Net/UnrealNetwork.h"
+#include "SRO/SRO.h"
 #include "UI/Login/SROLoginHUD.h"
-
 
 // Called when the game starts
 void ASROOfflineController::BeginPlay()
@@ -15,18 +16,5 @@ void ASROOfflineController::BeginPlay()
 	FInputModeUIOnly Mode = FInputModeUIOnly();
 	Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(Mode);
-}
-
-void ASROOfflineController::Logout()
-{
-	AuthToken = nullptr;
-	UserId = -1;
-}
-
-void ASROOfflineController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME_CONDITION(ASROOfflineController, AuthToken, COND_OwnerOnly);
 }
 

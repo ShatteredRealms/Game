@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DraggableResizableBaseWindow.h"
 #include "Blueprint/UserWidget.h"
-#include "Chat/ChatPanel.h"
+#include "Chat/ChatTabWidget.h"
 #include "Components/CanvasPanel.h"
+
 #include "SROBaseUI.generated.h"
 
 /**
@@ -22,8 +24,7 @@ class SRO_API USROBaseUI : public UUserWidget
 	virtual void NativeConstruct() override;
 
 	/** BP Chat panel class that implements the UI design */
-	TSubclassOf<UChatPanel> ChatPanelClass;
-	
+
 public:
 	USROBaseUI(const FObjectInitializer& ObjectInitializer);
 
@@ -33,7 +34,13 @@ public:
 
 	/** Array of all the chat panels. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UChatPanel*> ChatPanels;
+	TArray<UDraggableResizableBaseWindow*> ChatPanels;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UDraggableResizableBaseWindow> ChatWindowClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UChatTabWidget> ChatTabWidgetClass;
 
 public:
 	/**

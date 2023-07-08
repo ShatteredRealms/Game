@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Chat/SROChatService.h"
+#include "Chat/SROChatManager.h"
 #include "Offline/SROOfflineController.h"
 #include "SROPlayerController.generated.h"
 
@@ -16,12 +16,11 @@ class SRO_API ASROPlayerController : public ASROOfflineController
 {
 	GENERATED_BODY()
 
-	USROChatService* ChatService;
-	
 public:
 	virtual void BeginPlay() override;
 
-	USROChatService* GetChatService();
+	UFUNCTION(BlueprintCallable)
+	void PreDisconnect();
 };
 
 

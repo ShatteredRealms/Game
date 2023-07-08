@@ -7,7 +7,7 @@
 void USROChatWebLibrary::SendChatMessage(const FString& CharacterName, const FText& Message, int64 ChannelId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
 	const FString Url = FString::Format(
-		TEXT("{0}/message/channel/{1}"),
+		TEXT("{0}/message/channel/id/{1}"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
@@ -28,5 +28,5 @@ void USROChatWebLibrary::SendChatMessage(const FString& CharacterName, const FTe
 		)
 	);
 	
-	USROWebLibrary::ProcessAuthRequest(Request, Url, "POST", Body, AuthToken);	
+	USROWebLibrary::ProcessAuthRequest(Request, Url, "PUT", Body, AuthToken);	
 }

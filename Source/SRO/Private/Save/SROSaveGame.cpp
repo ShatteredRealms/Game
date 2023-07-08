@@ -19,18 +19,27 @@ USROSaveGame* USROSaveGame::CreateDefault()
 		return nullptr;
 	}
 
-	NewSaveGame->AllChatPanelData.Add({
-		.Position = {32, 800},
-		.Size = {900, 250},
-		.Tabs = {
-			{
-				.Name = "Default",
-				.ChannelIds = {1},
-				.CurrentChannel = 1,
-				.bSelected = true
-			}
-		},
-	});
+	FChatPanelData ChatPanel;
+	
+	FVector2f Position;
+	Position.X = 32;
+	Position.Y = 800;
+	ChatPanel.Position = Position;
+	
+	FVector2D Size;
+	Size.X = 900;
+	Size.Y = 250;
+	ChatPanel.Size = Size;
+
+	FChatTabData DefaultTab;
+	DefaultTab.Name = "Default";
+	DefaultTab.ChannelIds.Add(FUInt64(1));
+	DefaultTab.CurrentChannel = FUInt64(1);
+	DefaultTab.bSelected = true;
+
+	ChatPanel.Tabs.Add(DefaultTab);
+
+	NewSaveGame->AllChatPanelData.Add(ChatPanel);
 
 	return NewSaveGame;
 }

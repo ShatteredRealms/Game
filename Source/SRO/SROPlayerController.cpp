@@ -3,8 +3,9 @@
 
 #include "SROPlayerController.h"
 
-#include "SROGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Save/SROSaveStatics.h"
 
 void ASROPlayerController::BeginPlay()
 {
@@ -15,23 +16,12 @@ void ASROPlayerController::BeginPlay()
 	mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture);
 	SetShowMouseCursor(true);
 	SetInputMode(mode);
-
-	if (IsLocalPlayerController())
-	{
-		UChatChannel* ChatChannel = NewObject<UChatChannel>();
-		ChatChannel->Struct.Id = 1;
-		ChatChannel->Struct.Name = "All";
-		GetChatService()->ConnectToChannel(ChatChannel, AuthToken);
-	}
 }
 
-USROChatService* ASROPlayerController::GetChatService()
+void ASROPlayerController::PreDisconnect()
 {
-	if (ChatService)
+	if (IsLocalController())
 	{
-		return ChatService;
+		USROSaveStatics::SaveGame(this);
 	}
-	
-	ChatService = NewObject<USROChatService>();
-	return ChatService;
 }

@@ -21,7 +21,7 @@ FString USROWebLibrary::GetGRPCAPIUrl()
 
 FString USROWebLibrary::GetGameBackendAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT
 	return "localhost:8082/v1";
 #else
 	return GetAPIUrl()+"/gamebackend/v1";
@@ -30,7 +30,7 @@ FString USROWebLibrary::GetGameBackendAPIUrl()
 
 FString USROWebLibrary::GetCharactersAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT
 	return "localhost:8081/v1";
 #else
 	return GetAPIUrl()+"/characters/v1";
@@ -39,7 +39,7 @@ FString USROWebLibrary::GetCharactersAPIUrl()
 
 FString USROWebLibrary::GetAccountsAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT
 	return "localhost:8080/v1";
 #else
 	return GetAPIUrl()+"/accounts/v1";
@@ -48,7 +48,7 @@ FString USROWebLibrary::GetAccountsAPIUrl()
 
 FString USROWebLibrary::GetChatAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT
 	return "localhost:8180/v1";
 #else
 	return GetAPIUrl()+"/chat/v1";
@@ -57,7 +57,7 @@ FString USROWebLibrary::GetChatAPIUrl()
 
 FString USROWebLibrary::GetChatGRPCUrl()
 {
-#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+#if UE_BUILD_DEVELOPMENT
 	return "localhost:8180";
 #else
 	return "chat."+GetGRPCAPIUrl()+":8180";
@@ -71,6 +71,7 @@ void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::Thread
 	Request->SetVerb(RequestType);
 	Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+	Request->SetTimeout(10);
 	if (Body != "") Request->SetContentAsString(Body);
 	Request->ProcessRequest();
 }
@@ -107,7 +108,7 @@ FString USROWebLibrary::ValidateResponse(const bool& bWasSuccessful, const FHttp
 		return FString::Format(TEXT("Error {0}"),
 			static_cast<FStringFormatOrderedArguments>(
 				TArray<FStringFormatArg, TFixedAllocator<1>>{
-					FStringFormatArg(FString::FromInt(Response->GetResponseCode()))
+					FStringFormatArg(FString::FromInt(Response->GetResponseCode())),
 				}
 			)
 		);

@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Save/SROSaveStatics.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ASROCharacter

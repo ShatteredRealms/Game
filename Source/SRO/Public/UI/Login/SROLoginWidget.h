@@ -26,6 +26,8 @@ protected:
 public:
 	USROLoginWidget(const class FObjectInitializer& ObjectInitializer);
 
+	virtual void NativeConstruct() override;
+
 	//+ Start Login Panel
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
@@ -42,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UButton* LoginButton;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UThrobber* LoginThrobber;
 
 	UFUNCTION(BlueprintCallable, Category = "Login")
 	void Login();
@@ -50,7 +55,7 @@ public:
 	void Reset();
 
 	UFUNCTION(Category = "Login")
-	void OnSuccessfulLogin(FString AuthToken, int32 UserId) const;
+	void OnSuccessfulLogin(FString AuthToken, FString RefreshToken) const;
 
 private:
 	void OnLoginRequestReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

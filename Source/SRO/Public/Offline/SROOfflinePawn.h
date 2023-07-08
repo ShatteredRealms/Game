@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Auth/Keycloak/Keycloak.h"
 #include "GameFramework/Pawn.h"
 #include "UI/Login/SROLoginWidget.h"
 #include "SROOfflinePawn.generated.h"

@@ -5,18 +5,31 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
+#include "Offline/SROOfflineGameMode.h"
+#include "Offline/SROOfflinePawn.h"
 #include "SRO/SRO.h"
-#include "Util/SROAccountsWebLibrary.h"
+#include "SRO/SROGameInstance.h"
+#include "SRO/SROGameMode.h"
 #include "Util/SROWebLibrary.h"
 
 USROLoginWidget::USROLoginWidget(const class FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	Http = &FHttpModule::Get();
+}
+
+void USROLoginWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	
+	if (LoginThrobber)
+	{
+		LoginThrobber->SetVisibility(ESlateVisibility::Hidden);
+	}
+	
 	if (LoginPanel)
 	{	
 		LoginPanel->SetVisibility(ESlateVisibility::Visible);
 	}
-
-	Http = &FHttpModule::Get();
 }
 
 void USROLoginWidget::OnLoginRequestReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -33,7 +46,7 @@ void USROLoginWidget::OnLoginRequestReceived(FHttpRequestPtr Request, FHttpRespo
 		return;
 	}
 
-	OnSuccessfulLogin(JsonObject->GetStringField("token"), JsonObject->GetIntegerField("id"));
+	OnSuccessfulLogin(JsonObject->GetStringField("access_token"), JsonObject->GetStringField("refresh_token"));
 }
 
 void USROLoginWidget::LoginFailed(const FString Message) const
@@ -42,6 +55,7 @@ void USROLoginWidget::LoginFailed(const FString Message) const
 	LoginErrorText->SetText(FText::FromString(Message));
 	PasswordTextBox->SetText(FText::FromString(TEXT("")));
 	LoginButton->SetIsEnabled(true);
+	LoginThrobber->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void USROLoginWidget::Login()
@@ -60,31 +74,46 @@ void USROLoginWidget::Login()
 	
 	LoginButton->SetIsEnabled(false);
 	LoginErrorText->SetVisibility(ESlateVisibility::Hidden);
+	LoginThrobber->SetVisibility(ESlateVisibility::HitTestInvisible);
 
 	const auto Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &USROLoginWidget::OnLoginRequestReceived);
 
-	USROAccountsWebLibrary::Login(UsernameTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
+		return;
+	}
+
+	GI->Keycloak->Login(UsernameTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString(), Request);
 }
 
 void USROLoginWidget::Reset()
 {
 	PasswordTextBox->SetText(FText());
 	LoginButton->SetIsEnabled(true);
+	LoginThrobber->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void USROLoginWidget::OnSuccessfulLogin(FString AuthToken, int32 UserId) const
+void USROLoginWidget::OnSuccessfulLogin(FString AuthToken, FString RefreshToken) const
 {
-	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
+		return;
+	}
+
+	GI->UpdateAuthTokens(AuthToken, RefreshToken);
+
+	ASROOfflineController* PC = Cast<ASROOfflineController>(GetOwningPlayer());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
 		return;
 	}
 
-	PC->AuthToken = AuthToken;
-	PC->UserId = UserId;
-	
 	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
 	if (!PC)
 	{

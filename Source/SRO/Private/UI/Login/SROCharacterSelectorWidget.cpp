@@ -3,50 +3,98 @@
 
 #include "UI/Login/SROCharacterSelectorWidget.h"
 
-#include "Dom/JsonObject.h"
+#include "TurboLinkGrpcConfig.h"
+#include "TurboLinkGrpcManager.h"
+#include "TurboLinkGrpcUtilities.h"
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "SRO/SRO.h"
 #include "SRO/SROCharacter.h"
 #include "SRO/SROGameInstance.h"
+#include "SSroGamebackend/ConnectionService.h"
 #include "UI/Login/SROLoginHUD.h"
-#include "Util/SROCharactersWebLibrary.h"
-#include "Util/SROWebLibrary.h"
 
 void USROCharacterSelectorWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Http = &FHttpModule::Get();
-
-	const auto Request = Http->CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &USROCharacterSelectorWidget::OnCharactersReceived);
-
-	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (!PC)
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
 	{
-		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
 		return;
 	}
 
-	USROCharactersWebLibrary::GetCharacters(PC->UserId, PC->AuthToken, Request);
+	auto TLM = UTurboLinkGrpcUtilities::GetTurboLinkGrpcManager(GetWorld());
+	if (!TLM)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to load TurboLink GRPC Utilities"));
+		return;
+	}
 
+	auto CharactersService = Cast<UCharactersService>(TLM->MakeService("CharactersService"));
+	if (!CharactersService)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to create characters service"));
+		return;
+	}
+
+	CharactersServiceClient = CharactersService->MakeClient();
+	CharactersServiceClient->OnGetCharactersResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnGetCharactersReceived);
+	
+
+#if UE_BUILD_DEVELOPMENT
+	CharactersService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharactersServiceDev")));
+#else
+	CharactersService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharactersServiceProd")));
+#endif
+	
+
+	const auto Handle = CharactersServiceClient->InitGetCharacters();
+	CharactersServiceClient->GetCharacters(Handle, {}, GI->AuthToken);
+
+	auto ConnectionService = Cast<UConnectionService>(TLM->MakeService("ConnectionService"));
+	if (!ConnectionService)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to create connection service"));
+		return;
+	}
+
+	ConnectionServiceClient = ConnectionService->MakeClient();
+	ConnectionServiceClient->OnConnectGameServerResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnConnectResponseReceived);
+
+#if UE_BUILD_DEVELOPMENT
+	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceDev")));
+#else
+	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
+#endif
+	
 	SelectedCharacterSpawnLocation = {0, 0, 0};
 	SelectedCharacterSpawnRotator = {0, 0, 0};
 
 	BaseActorClass = ASROCharacter::StaticClass();
+
+	PlayThrobber->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void USROCharacterSelectorWidget::Logout()
 {
+
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
+		return;
+	}
+
+	GI->Logout();
+	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
 		return;
 	}
-
-	PC->Logout();
 
 	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
 	if (!PC)
@@ -61,6 +109,7 @@ void USROCharacterSelectorWidget::Logout()
 void USROCharacterSelectorWidget::Reset()
 {
 	CharacterList->ClearListItems();
+	ErrorText->SetText(FText());
 }
 
 void USROCharacterSelectorWidget::CreateCharacter()
@@ -84,10 +133,10 @@ void USROCharacterSelectorWidget::CreateCharacter()
 
 void USROCharacterSelectorWidget::Play()
 {
-	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
-	if (!PC)
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
 	{
-		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
 		return;
 	}
 
@@ -98,57 +147,35 @@ void USROCharacterSelectorWidget::Play()
 		return;
 	}
 
-	const auto Request = Http->CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &USROCharacterSelectorWidget::OnConnectResponseReceived);
-	USROCharactersWebLibrary::Connect(Character->BaseData.Id, PC->AuthToken, Request);
+	const auto Handle = ConnectionServiceClient->InitConnectGameServer();
+	FGrpcSroCharactersCharacterTarget Request;
+	Request.Target.Id = Character->BaseData.Id;
+	Request.Target.TargetCase = EGrpcSroCharactersCharacterTargetTarget::Id;
+	ConnectionServiceClient->ConnectGameServer(Handle, Request, GI->AuthToken);
+	
+	PlayThrobber->SetVisibility(ESlateVisibility::HitTestInvisible);
+	PlayButton->SetIsEnabled(false);
 }
 
-void USROCharacterSelectorWidget::OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
-                                                       bool bWasSuccessful)
+void USROCharacterSelectorWidget::OnConnectResponseReceived(
+	FGrpcContextHandle Handle,
+	const FGrpcResult& GrpcResult,
+	const FGrpcSroGamebackendConnectGameServerResponse& Response)
 {
-	TSharedPtr<FJsonObject> JsonObject;
-	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject);
-	if (Message != TEXT(""))
-	{
-		ErrorText->SetText(FText::FromString(Message));
-		ErrorText->SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
-
-	for (TSharedPtr<FJsonValue> CharacterJsonValue : JsonObject->GetArrayField("characters"))
-	{
-		USROBaseCharacter* Character = NewObject<USROBaseCharacter>();
-		Character->BaseData = FSROBaseCharacterStruct(CharacterJsonValue->AsObject());
-		CharacterList->AddItem(Character);
-	}
-
-	CharacterList->SetSelectedIndex(0);
-}
-
-void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
-                                                            bool bWasSuccessful)
-{
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	const FString Message = USROWebLibrary::ValidateJsonResponse(bWasSuccessful, Response, JsonObject);
-	if (Message != TEXT(""))
-	{
-		FString JsonResponse;
-		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonResponse);
-		FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-
-		GEngine->AddOnScreenDebugMessage(-1, 30.f, FColor::Red, JsonResponse);
-
-		UE_LOG(LogSRO, Error, TEXT("%s"), *JsonResponse);
-
-		ErrorText->SetText(FText::FromString(Message));
-		ErrorText->SetVisibility(ESlateVisibility::Visible);
-		return;
-	}
-
+	PlayThrobber->SetVisibility(ESlateVisibility::Hidden);
+	PlayButton->SetIsEnabled(true);
+	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(GetOwningPlayer());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		return;
+	}
+	
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
 		return;
 	}
 
@@ -160,17 +187,23 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Requ
 	}
 
 	FString URL = FString::Format(
-		TEXT("{0}:{1}?t={2}?c={3}"),
+		TEXT("{0}:{1}?t={2}"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<4>>
 			{
-				FStringFormatArg(JsonObject->GetStringField("address")),
-				FStringFormatArg(JsonObject->GetStringField("port")),
-				FStringFormatArg(PC->AuthToken),
-				FStringFormatArg(Character->BaseData.Name),
+				FStringFormatArg(Response.Address),
+				FStringFormatArg(Response.Port),
+				FStringFormatArg(Response.ConnectionId),
 			}));
 
-	Cast<USROGameInstance>(GetGameInstance())->SelectedCharacterName = Character->BaseData.Name;
+	GI->SelectedCharacterName = Character->BaseData.Name;
+	GI->SelectedCharacterId = Character->BaseData.Id;
+	GI->ChatManager->OnConnectedAllChannels().BindWeakLambda(this, [PC, URL]
+	{
+		PC->ClientTravel(URL, TRAVEL_Absolute);
+	});
+	
+	GI->ChatManager->ConnectAllChannels();
 
 	// URL = FString::Format(
 	// 	TEXT("127.0.0.1:7777?t={0}?c={1}"),
@@ -181,5 +214,17 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(FHttpRequestPtr Requ
 	// 			FStringFormatArg(Character->BaseData.Name),
 	// 		}));
 
-	PC->ClientTravel(URL, TRAVEL_Absolute);
+}
+
+void USROCharacterSelectorWidget::OnGetCharactersReceived(
+	FGrpcContextHandle Handle,
+	const FGrpcResult& GrpcResult,
+	const FGrpcSroCharactersCharactersDetails& Response)
+{
+	for (auto CharacterData : Response.Characters)
+	{
+		USROBaseCharacter* Character = NewObject<USROBaseCharacter>();
+		Character->BaseData = CharacterData;
+		CharacterList->AddItem(Character);
+	}
 }

@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "Blueprint/IUserObjectListEntry.h"
 #include "Blueprint/UserWidget.h"
-#include "Chat/ChatMessage.h"
+#include "Chat/SROChatMessage.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/TextBlock.h"
+#include "SSroChat/ChatMessage.h"
 #include "ChatMessageListEntry.generated.h"
 
 /**

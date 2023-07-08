@@ -42,7 +42,7 @@ public class JWTPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"OpenSSL"
+				"OpenSSL",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

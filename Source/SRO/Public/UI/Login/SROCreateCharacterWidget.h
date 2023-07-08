@@ -19,12 +19,14 @@ UCLASS(Blueprintable)
 class SRO_API USROCreateCharacterWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
 protected:
 	FHttpModule* Http;
 	
 public:
 	virtual void NativeConstruct() override;
 
+// Navigation Buttons
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UButton* CreateButton;
 
@@ -34,21 +36,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UButton* LogoutButton;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UListView* GenderList;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
-	UListView* RealmList;
-
+// Output information
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UEditableTextBox* NameTextBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UTextBlock* ErrorText;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-	AActor* CharacterPreview;
-
+// Button functions
 	UFUNCTION(BlueprintCallable)
 	void Reset();
 	

@@ -5,6 +5,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "SRO/SRO.h"
 #include "UI/Login/SROLoginWidget.h"
 
 // Sets default values
@@ -17,5 +18,6 @@ ASROOfflinePawn::ASROOfflinePawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	Camera->SetupAttachment(RootComponent);
 	Camera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
 }
 

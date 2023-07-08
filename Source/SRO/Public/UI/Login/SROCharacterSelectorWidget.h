@@ -9,6 +9,9 @@
 #include "Components/Button.h"
 #include "Components/ListView.h"
 #include "Components/TextBlock.h"
+#include "Components/Throbber.h"
+#include "SSroCharacters/CharactersService.h"
+#include "SSroGamebackend/ConnectionClient.h"
 #include "SROCharacterSelectorWidget.generated.h"
 
 /**
@@ -20,7 +23,9 @@ class SRO_API USROCharacterSelectorWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	FHttpModule* Http;
+	UCharactersServiceClient* CharactersServiceClient;
+
+	UConnectionServiceClient* ConnectionServiceClient;
 	
 public:
 	virtual void NativeConstruct() override;
@@ -39,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UTextBlock* ErrorText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
+	UThrobber* PlayThrobber;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 	USROBaseCharacter* SelectedBaseCharacter;
@@ -68,7 +76,11 @@ public:
 	void Play();
 	
 private:
-	void OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-	void OnConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	UFUNCTION()
+	void OnConnectResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroGamebackendConnectGameServerResponse& Response);
+
+	UFUNCTION()
+	void OnGetCharactersReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharactersCharactersDetails& Response);
 };
+
 

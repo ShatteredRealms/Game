@@ -1,21 +1,9 @@
 ﻿#pragma once
-#include "ChatMessage.h"
+#include "TurboLinkGrpcClient.h"
+#include "SSroChat/ChatClient.h"
+#include "SSroChat/ChatMessage.h"
 
 #include "ChatChannel.generated.h"
-
-USTRUCT(BlueprintType)
-struct FChatChannelStruct
-{
-	GENERATED_BODY()
-	
-	/** The name of the chat tab */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int64 Id;
-
-	/** The name of the chat tab */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Name;
-};
 
 UCLASS(Blueprintable)
 class UChatChannel : public UObject
@@ -24,8 +12,14 @@ class UChatChannel : public UObject
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FChatChannelStruct Struct;
+	FGrpcContextHandle ContextHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FChatMessageStruct> Messages;
+	UChatServiceClient* Client;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGrpcSroChatChatChannel Struct;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGrpcSroChatChatMessage> Messages;
 };

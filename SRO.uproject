@@ -1,50 +1,58 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "{C752EB6B-48C4-87E8-87FD-1A9DEE39393B}",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "SRO",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"UMG",
-				"CoreUObject",
-				"DeveloperSettings"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "Agones",
-			"Enabled": true
-		},
-		{
-			"Name": "JWTPlugin",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5a7b13f17ce04fc3b4a571a8faf58b4a"
-		},
-		{
-			"Name": "LauncherChunkInstaller",
-			"Enabled": false
-		},
-		{
-			"Name": "ChunkDownloader",
-			"Enabled": false
-		}
-	],
-	"TargetPlatforms": [
-		"IOS",
-		"Linux",
-		"Windows"
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "{C752EB6B-48C4-87E8-87FD-1A9DEE39393B}",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "SRO",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "Engine",
+        "UMG",
+        "CoreUObject",
+        "DeveloperSettings"
+      ]
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true,
+      "TargetAllowList": [
+        "Editor"
+      ]
+    },
+    {
+      "Name": "Agones",
+      "Enabled": true
+    },
+    {
+      "Name": "JWTPlugin",
+      "Enabled": true,
+      "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5a7b13f17ce04fc3b4a571a8faf58b4a"
+    },
+    {
+      "Name": "LauncherChunkInstaller",
+      "Enabled": false
+    },
+    {
+      "Name": "ChunkDownloader",
+      "Enabled": false
+    },
+    {
+      "Name": "KeycloakAdapter",
+      "Enabled": true
+    },
+    {
+      "Name": "TurboLink",
+      "Enabled": true
+    }
+  ],
+  "TargetPlatforms": [
+    "IOS",
+    "Linux",
+    "Windows"
+  ]
 }

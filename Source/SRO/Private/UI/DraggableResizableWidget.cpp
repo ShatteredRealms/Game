@@ -8,7 +8,6 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "UI/Chat/ChatPanel.h"
 
 FReply UDraggableResizableWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry,
                                                           const FPointerEvent& InMouseEvent)

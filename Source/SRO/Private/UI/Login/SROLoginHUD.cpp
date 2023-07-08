@@ -7,6 +7,7 @@
 #include "SRO/SRO.h"
 #include "UI/Login/SROCreateCharacterWidget.h"
 #include "UI/Login/SROLoginWidget.h"
+#include "Util/SRODevSettings.h"
 
 ASROLoginHUD::ASROLoginHUD()
 {
@@ -24,6 +25,7 @@ void ASROLoginHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
 	if (LoginWidgetClass)
 	{
 		LoginWidget = CreateWidget<USROLoginWidget>(GetWorld(), LoginWidgetClass);
@@ -70,6 +72,27 @@ void ASROLoginHUD::BeginPlay()
 	}
 	
 	GetOwningPlayerController()->SetShowMouseCursor(true);
+
+	FString AuthToken;
+	FString RefreshToken;
+	if(FParse::Value(FCommandLine::Get(), TEXT("sro-token"), AuthToken)
+		&& FParse::Value(FCommandLine::Get(), TEXT("sro-refresh-token"), RefreshToken))
+	{
+		LoginWidget->OnSuccessfulLogin(AuthToken, RefreshToken);
+		return;
+	}
+
+
+#if UE_BUILD_DEVELOPMENT
+	const USRODevSettings* DevSettings = GetDefault<USRODevSettings>();
+	if (!DevSettings->TestUserUsername.IsEmpty() && !DevSettings->TestUserPassword.IsEmpty())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Development test user set - logging in."));
+		LoginWidget->UsernameTextBox->SetText(DevSettings->TestUserUsername);
+		LoginWidget->PasswordTextBox->SetText(DevSettings->TestUserPassword);
+		LoginWidget->Login();
+	}
+#endif
 }
 
 void ASROLoginHUD::Login() const

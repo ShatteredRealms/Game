@@ -3,6 +3,7 @@
 
 #include "Offline/SROOfflineGameMode.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "UI/Login/SROLoginHUD.h"
 

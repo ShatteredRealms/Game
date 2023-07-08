@@ -80,37 +80,45 @@ bool USROSaveStatics::SaveGame(ASROPlayerController* PC)
 		return false;
 	}
 
+	SaveGame->AllChatPanelData.Empty();
+	
 	// Process chat channels
 	for (const auto ChatChannel : HUD->BaseUI->ChatPanels)
 	{
 		FGeometry Geometry;
 		UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(ChatChannel->Slot);
-		if (!Slot)
+		if(!HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry))
 		{
-			UE_LOG(LogSRO, Error, TEXT("Invalid UI: Chat panel not in main canvas panel"))
+			UE_LOG(LogSRO, Error, TEXT("UI ERROR: Failed to get geometry for chat panel"));
 			return false;
 		}
-		
-		HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry);
-		FChatPanelData ChatPanelData = {
-			.Position = Geometry.Position,
-			.Size = Geometry.Size,
-		};
+		FChatPanelData ChatPanelData;
+		ChatPanelData.Position = Geometry.Position;
+		ChatPanelData.Size = Geometry.Size;
 
-		for (const auto ChatTab : ChatChannel->ChatTabs)
+		for (const auto ChatTab : ChatChannel->TabMapping)
 		{
-			ChatPanelData.Tabs.Add({
-				.Name = ChatTab.Key->TabName->GetText().ToString(),
-				.ChannelIds = ChatTab.Value->GetChatChannelIds(),
-				.CurrentChannel = ChatTab.Value->CurrentChannel->Struct.Id,
-				.bSelected = ChatTab.Key->IsSelected(),
-			});
+			auto Value = Cast<UChatTabWidget>(ChatTab.Value);
+			if (!Value)
+			{
+				UE_LOG(LogSRO, Error, TEXT("UI ERROR: Cannot load chat panel tab data"));
+				return false;
+			}
+			
+			FChatTabData Data;
+			Data.Name = ChatTab.Key->TabName->GetText().ToString();
+			Data.ChannelIds = Value->GetChatChannelIds();
+			if (Value->ActiveChatChannel)
+			{
+				Data.CurrentChannel = Value->ActiveChatChannel->Struct.Id.Value;
+			}
+			Data.bSelected = ChatTab.Key->IsSelected();
+			
+			ChatPanelData.Tabs.Add(Data);
 		}
 
 		SaveGame->AllChatPanelData.Add(ChatPanelData);
 	}
 
-	UGameplayStatics::SaveGameToSlot(SaveGame, GetSlotName(PC), 0);
-
-	return true;
+	return UGameplayStatics::SaveGameToSlot(SaveGame, GetSlotName(PC), 0);
 }

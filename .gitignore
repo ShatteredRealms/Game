@@ -79,3 +79,6 @@ Releases
 
 # Agones Sidecar For Testing
 Agones\ Sidecar
+
+# Server settings and secrets
+Config/ServerSettings.ini

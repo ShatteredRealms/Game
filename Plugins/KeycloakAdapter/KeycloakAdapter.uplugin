@@ -1,0 +1,30 @@
+﻿{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "KeycloakAdapter",
+  "Description": "",
+  "Category": "Other",
+  "CreatedBy": "Wil Simpson",
+  "CreatedByURL": "https://forever.dev",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "KeycloakAdapter",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "JWTPlugin",
+      "Enabled": true,
+      "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5a7b13f17ce04fc3b4a571a8faf58b4a"
+    }
+  ]
+}

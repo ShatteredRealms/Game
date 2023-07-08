@@ -3,6 +3,8 @@
 
 #include "SROPlayerState.h"
 
+#include "Save/SROSaveStatics.h"
+
 ASROPlayerState::ASROPlayerState() : Super()
 {
 	bUseCustomPlayerNames = 0;

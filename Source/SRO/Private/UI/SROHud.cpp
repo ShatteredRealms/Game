@@ -3,6 +3,7 @@
 
 #include "UI/SROHud.h"
 
+#include "Save/SROSaveStatics.h"
 #include "UI/SROBaseUI.h"
 
 ASROHud::ASROHud()

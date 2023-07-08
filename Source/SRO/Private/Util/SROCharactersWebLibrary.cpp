@@ -10,7 +10,7 @@ void USROCharactersWebLibrary::Connect(int32 CharacterId, FString AuthToken,
                                        TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
 	const FString Url = FString::Format(
-		TEXT("{0}/connect/{1}"),
+		TEXT("{0}/connect/character/id/{1}"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
@@ -23,10 +23,10 @@ void USROCharactersWebLibrary::Connect(int32 CharacterId, FString AuthToken,
 	USROWebLibrary::ProcessAuthRequest(Request, Url, "GET", "", AuthToken);	
 }
 
-void USROCharactersWebLibrary::GetCharacters(int32 UserId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
+void USROCharactersWebLibrary::GetCharacters(FString UserId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
 	const FString Url = FString::Format(
-		TEXT("{0}/users/{1}/characters"),
+		TEXT("{0}/users/id/{1}/characters"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
@@ -40,10 +40,10 @@ void USROCharactersWebLibrary::GetCharacters(int32 UserId, FString AuthToken, TS
 }
 
 void USROCharactersWebLibrary::CreateCharacter(TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request, FString AuthToken,
-	int32 OwnerId, FString Name, int32 GenderId, int32 RealmId)
+	FString OwnerId, FString Name, FString Gender, FString Realm)
 {
 	const FString Url = FString::Format(
-		TEXT("{0}/users/{1}/characters"),
+		TEXT("{0}/users/id/{1}/characters"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<2>>
 			{
@@ -54,13 +54,13 @@ void USROCharactersWebLibrary::CreateCharacter(TSharedRef<IHttpRequest, ESPMode:
 	);
 	
 	const FString Body = FString::Format(
-		TEXT("{\"name\":\"{0}\",\"gender\":{1},\"realm\":{2}}"),
+		TEXT("{\"name\":\"{0}\",\"gender\":\"{1}\",\"realm\":\"{2}\"}"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<3>>
 			{
 				FStringFormatArg(Name),
-				FStringFormatArg(GenderId),
-				FStringFormatArg(RealmId),
+				FStringFormatArg(Gender),
+				FStringFormatArg(Realm),
 			}
 		)
 	);

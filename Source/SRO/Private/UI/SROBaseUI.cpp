@@ -6,12 +6,24 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Save/SROSaveStatics.h"
 #include "SRO/SRO.h"
+#include "SRO/SROGameInstance.h"
 #include "SRO/SROPlayerState.h"
+#include "UI/Chat/ChatTabWidget.h"
 
 USROBaseUI::USROBaseUI(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FClassFinder<UChatPanel> FoundChatPanel(TEXT("/Game/SRO/Core/UI/Chat/ChatPanel"));
-	ChatPanelClass = FoundChatPanel.Class;
+	static ConstructorHelpers::FClassFinder<UDraggableResizableBaseWindow> FoundChatWindow(TEXT("/Game/SRO/Core/UI/BP_DragResizeBaseWindow"));
+	if (FoundChatWindow.Class != NULL)
+	{
+		ChatWindowClass = FoundChatWindow.Class;
+	}
+	
+	
+	static ConstructorHelpers::FClassFinder<UChatTabWidget> FoundChatTabWidget(TEXT("/Game/SRO/Core/UI/Chat/BP_ChatTabWidget"));
+	if (FoundChatTabWidget.Class != NULL)
+	{
+		ChatTabWidgetClass = FoundChatTabWidget.Class;
+	}
 }
 
 bool USROBaseUI::SetupFromSave()
@@ -20,6 +32,7 @@ bool USROBaseUI::SetupFromSave()
 	{
 		ChatPanel->RemoveFromParent();
 	}
+	ChatPanels.Empty();
 	
 	ASROPlayerController* PC = Cast<ASROPlayerController>(GetOwningPlayer());
 	if (!PC)
@@ -36,20 +49,28 @@ bool USROBaseUI::SetupFromSave()
 		return false;
 	}
 
-
-	if (!ChatPanelClass)
+	if (!ChatWindowClass)
 	{
-		UE_LOG(LogSRO, Warning, TEXT("Chat Panel Widget Class NOT found"));
+		UE_LOG(LogSRO, Error, TEXT("Chat Panel Widget Class NOT found"));
 		return false;
 	}
+
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
+		return false;
+	}
+	
 	for (auto ChatPanelData : SaveGame->AllChatPanelData)
 	{
-		UChatPanel* ChatPanel = CreateWidget<UChatPanel>(GetWorld(), ChatPanelClass);
+		auto ChatPanel = CreateWidget<UDraggableResizableBaseWindow>(GetOwningPlayer(), ChatWindowClass);
 		if (!ChatPanel)
 		{
 			UE_LOG(LogSRO, Warning, TEXT("Chat Panel Widget NOT created"));
 			return false;
 		}
+		ChatPanel->CloseButton->SetVisibility(ESlateVisibility::Hidden);
 		
 		ChatPanels.Add(ChatPanel);
 		UCanvasPanelSlot* NewSlot = MainPanel->AddChildToCanvas(ChatPanel);
@@ -58,9 +79,18 @@ bool USROBaseUI::SetupFromSave()
 
 		for (auto ChatTabData : ChatPanelData.Tabs)
 		{
-			const auto Channels = PC->GetChatService()->GetConnectedChannelsByIds(ChatTabData.ChannelIds);
-			const auto CurrentChannel = PC->GetChatService()->ConnectedToChannel(ChatTabData.CurrentChannel);
-			const auto Tab = ChatPanel->CreateTab(FText::FromString(ChatTabData.Name), Channels, CurrentChannel);
+			TSet<UChatChannel*> Channels = GI->ChatManager->GetConnectedChannelsByIds(ChatTabData.ChannelIds);
+			UChatChannel* CurrentChannel = GI->ChatManager->GetChannel(ChatTabData.CurrentChannel);
+
+			auto ChatTab = CreateWidget<UChatTabWidget>(GetOwningPlayer(), ChatTabWidgetClass);
+			if (!ChatTab)
+			{
+				UE_LOG(LogSRO, Warning, TEXT("Failed loading base UI: Could not create Chat Tab"))
+			}
+			
+			ChatTab->SetupChat(Channels, CurrentChannel);
+			
+			UTabWidget* Tab = ChatPanel->CreateTab(FText::FromString(ChatTabData.Name), ChatTab);
 
 			if (!Tab)
 			{

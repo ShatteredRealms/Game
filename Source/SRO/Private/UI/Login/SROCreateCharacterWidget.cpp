@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "SRO/SRO.h"
+#include "SRO/SROGameInstance.h"
 #include "UI/Login/SROLoginHUD.h"
 #include "Util/SROCharactersWebLibrary.h"
 #include "Util/SROWebLibrary.h"
@@ -30,15 +31,15 @@ void USROCreateCharacterWidget::CreateCharacter()
 	const auto Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &USROCreateCharacterWidget::OnCreateCharacterResponse);
 
-	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
-	if (!PC)
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
 	{
-		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
 		return;
 	}
-
+	
 	// @TODO(wil): Read from the lists to get the gender and realm ids
-	USROCharactersWebLibrary::CreateCharacter(Request, PC->AuthToken, PC->UserId, NameTextBox->GetText().ToString(), 1, 1);
+	USROCharactersWebLibrary::CreateCharacter(Request, GI->AuthToken, GI->UserId, NameTextBox->GetText().ToString(), "Male", "Human");
 }
 
 void USROCreateCharacterWidget::Cancel()
@@ -62,14 +63,21 @@ void USROCreateCharacterWidget::Cancel()
 
 void USROCreateCharacterWidget::Logout()
 {
+	USROGameInstance* GI = Cast<USROGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Invalid game instance"))
+		return;
+	}
+
+	GI->Logout();
+	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to get player controller"))
 		return;
 	}
-
-	PC->Logout();
 	
 	ASROLoginHUD* HUD = Cast<ASROLoginHUD>(PC->GetHUD());
 	if (!PC)
@@ -92,7 +100,6 @@ void USROCreateCharacterWidget::OnCreateCharacterResponse(FHttpRequestPtr Reques
 		ErrorText->SetVisibility(ESlateVisibility::Visible);
 		return;
 	}
-
 	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(GetPlayerContext().GetPlayerController());
 	if (!PC)
