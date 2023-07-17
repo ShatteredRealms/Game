@@ -5,11 +5,15 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Chat/ChatChannel.h"
-#include "Chat/SROChatMessage.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ListView.h"
 #include "Interfaces/IHttpRequest.h"
+#include "UI/DropDownList.h"
 #include "ChatTabWidget.generated.h"
+
+class UChatTabWidget;
+
+DECLARE_DYNAMIC_DELEGATE_OneParam(FChatTabSelected, UChatTabWidget*, SelectedChatTab);
 
 /**
  * 
@@ -27,7 +31,16 @@ class SRO_API UChatTabWidget : public UUserWidget
 
 	virtual void NativeConstruct() override;
 
+protected:
+	UFUNCTION()
+	void OnDropDownClicked(UDropDownData* ClickedData);
+
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FChatTabSelected OnTabSelected;
+	
+	UChatTabWidget(const FObjectInitializer& ObjectInitializer);
+	
 	/** The current channel that is selected */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UChatChannel* ActiveChatChannel;
@@ -38,6 +51,9 @@ public:
 	/** User chat input */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UEditableTextBox* ChatTextBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UDropDownList* ChatDropDown;
 
 	UFUNCTION(BlueprintCallable)
 	void SendChatMessage(const FText& Text);
@@ -54,6 +70,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UChatChannel* ConnectedToChannel(int64 ChannelId);
+
+	UFUNCTION(BlueprintCallable)
+	UChatChannel* ChangeActiveChatChannel(UChatChannel* ChatChannel);
+
+	virtual FReply NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	virtual FReply NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent) override;
+
+	virtual void NativeOnAddedToFocusPath(const FFocusEvent& InFocusEvent) override;
 
 private:
 	// Internal event handlers

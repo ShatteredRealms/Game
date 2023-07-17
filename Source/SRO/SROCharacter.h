@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/SROBaseCharacter.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/PassiveTarget.h"
 #include "SROCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -12,6 +13,7 @@ class ASROCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+protected:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -20,11 +22,30 @@ class ASROCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-public:
-	ASROCharacter();
+	/** Name above the character */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UTextRenderComponent* NameText;
+	
+	/** Font used when character is selected */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = UI, meta = (AllowPrivateAccess = "true"))
+	UFont* SelectedFont;
 
-	virtual void BeginPlay() override;
+	/** Font used when character is not selected */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = UI, meta = (AllowPrivateAccess = "true"))
+	UFont* UnselectedFont;
 
+	/** Date time connected to the server */
+	FDateTime ConnectionDateTime;
+
+	/** Base character details */
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterDetails)
+	FGrpcSroCharacterCharacterDetails CharacterDetails;
+
+	UFUNCTION()
+	void OnRep_CharacterDetails();
+	
+	void OnCharacterDetailsUpdated();
+	
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
@@ -41,11 +62,32 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseCameraZoomRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	/** Whether the mouse is currently down */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	bool IsMouseDown;
+	
+public:
+	ASROCharacter();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character")
-	USROBaseCharacter* BaseCharacter;
+	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
+	
+	/** Get the time in seconds the player has been connected */
+	UFUNCTION(BlueprintCallable)
+	FUInt64 GetPlayTimespan() const;
+
+	/** Set the base character details */
+	UFUNCTION(BlueprintCallable)
+	void SetBaseCharacter(FGrpcSroCharacterCharacterDetails NewCharacterDetails);
+
+	/** Get the base character details */
+	UFUNCTION(BlueprintCallable)
+	FGrpcSroCharacterCharacterDetails& GetCharacterDetails();
+	
+	virtual void GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const override;
+
+	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
+
 protected:
 
 	/** Called for forwards/backward input */
@@ -83,7 +125,12 @@ protected:
 	 * @param Key Key pressed that initiated the zoom. 
 	 */
 	void ZoomCameraAtRate(FKey Key);
+
+	/** Target the next fighting target */
+	void NextFightingTarget();
 	
+	virtual void AddControllerYawInput(float Value) override;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -94,5 +141,11 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	/** Returns the character's name. */
+	virtual FORCEINLINE FString GetDisplayName() override { return CharacterDetails.Name; };
+
+private:
 };
+
+
 

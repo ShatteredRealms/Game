@@ -2,5 +2,5 @@
 
 FString UChatMessage::GenerateText()
 {
-	return FString::Printf(TEXT("%s: %s"), *ChatMessage.CharacterName, *ChatMessage.Message);
+	return FString::Printf(TEXT("[%s] %s: %s"), *ChatChannelData.Name, *ChatMessage.CharacterName, *ChatMessage.Message);
 }

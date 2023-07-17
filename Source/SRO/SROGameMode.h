@@ -5,9 +5,12 @@
 #include "CoreMinimal.h"
 #include "AgonesComponent.h"
 #include "JWTVerifier.h"
+#include "SROCharacter.h"
+#include "SROPlayerController.h"
 #include "Auth/Keycloak/Keycloak.h"
 #include "GameFramework/GameModeBase.h"
-#include "SSroCharacters/CharactersMessage.h"
+#include "SSroCharacter//CharacterMessage.h"
+#include "SSroCharacter/CharacterClient.h"
 #include "SSroGamebackend/ConnectionClient.h"
 #include "SROGameMode.generated.h"
 
@@ -37,6 +40,7 @@ class ASROGameMode : public AGameModeBase
 protected:
 	UConnectionServiceClient* ConnectionServiceClient;
 
+	UCharacterServiceClient* CharacterServiceClient;
 
 private:
 	UPROPERTY()
@@ -46,18 +50,18 @@ private:
 	// FKeycloakAdapterJWKFoundDelegate FoundJWKDelegate;
 	
 	FString ServerName;
+	FString AgonesMapName;
 
 	FTimerHandle TokenRefreshTimerHandle;
 	FString AuthToken;
 	FString RefreshToken;
-
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FGrpcContextHandle, FPendingConnection> PendingConnections;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<FUniqueNetIdRepl, FGrpcSroCharactersCharacterDetails> AcceptedConnections;
+	TMap<FUniqueNetIdRepl, FGrpcSroCharacterCharacterDetails> AcceptedConnections;
 	
 	/** Agones SDK */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -71,13 +75,17 @@ public:
 	static UAgonesComponent* GetAgonesSDK(UObject* WorldContextObject);
 
 private:
-	void OnCharactersReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	UFUNCTION()
+	void OnEditCharacterResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcGoogleProtobufEmpty& Response);
 
 public:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual APlayerController* SpawnPlayerControllerCommon(ENetRole InRemoteRole, FVector const& SpawnLocation, FRotator const& SpawnRotation, TSubclassOf<APlayerController> InPlayerControllerClass) override;
 	virtual FString InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal) override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual APawn* SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot) override;
+	virtual void Logout(AController* Exiting) override;
 	
 	void OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken);
@@ -87,10 +95,13 @@ public:
 	void OnKeycloakError(const FString& Error);
 	
 	UFUNCTION()
-	void OnVerifyConnectResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharactersCharacterDetails& Response);
+	void OnVerifyConnectResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharacterCharacterDetails& Response);
 	
 	UFUNCTION()
-	void OneGameServerDetailsReceived(const FGameServerResponse& Response);
+	void OnGameServerDetailsReceived(const FGameServerResponse& Response);
+
+	UFUNCTION()
+	void SyncCharacter(ASROPlayerController* PC);
 };
 
 

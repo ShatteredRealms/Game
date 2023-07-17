@@ -12,6 +12,8 @@
 #include "UI/DraggableResizableWidget.h"
 #include "DraggableResizableBaseWindow.generated.h"
 
+
+
 /**
  * 
  */
@@ -74,4 +76,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetCloseable(bool IsCloseable);
+
+	virtual FVector2D GetMinSize() override;
+
 };

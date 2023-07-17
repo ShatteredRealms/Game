@@ -11,6 +11,7 @@
 #include "SRO/SRO.h"
 #include "SRO/SROCharacter.h"
 #include "SRO/SROGameInstance.h"
+#include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionService.h"
 #include "UI/Login/SROLoginHUD.h"
 
@@ -32,26 +33,25 @@ void USROCharacterSelectorWidget::NativeConstruct()
 		return;
 	}
 
-	auto CharactersService = Cast<UCharactersService>(TLM->MakeService("CharactersService"));
-	if (!CharactersService)
+	auto CharacterService = Cast<UCharacterService>(TLM->MakeService("CharacterService"));
+	if (!CharacterService)
 	{
-		UE_LOG(LogSRO, Error, TEXT("Unable to create characters service"));
+		UE_LOG(LogSRO, Error, TEXT("Unable to create character service"));
 		return;
 	}
 
-	CharactersServiceClient = CharactersService->MakeClient();
-	CharactersServiceClient->OnGetCharactersResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnGetCharactersReceived);
+	CharacterServiceClient = CharacterService->MakeClient();
+	CharacterServiceClient->OnGetCharactersResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnGetCharactersReceived);
 	
 
 #if UE_BUILD_DEVELOPMENT
-	CharactersService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharactersServiceDev")));
+	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceDev")));
 #else
-	CharactersService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharactersServiceProd")));
+	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceProd")));
 #endif
 	
-
-	const auto Handle = CharactersServiceClient->InitGetCharacters();
-	CharactersServiceClient->GetCharacters(Handle, {}, GI->AuthToken);
+	const auto Handle = CharacterServiceClient->InitGetCharacters();
+	CharacterServiceClient->GetCharacters(Handle, {}, GI->AuthToken);
 
 	auto ConnectionService = Cast<UConnectionService>(TLM->MakeService("ConnectionService"));
 	if (!ConnectionService)
@@ -148,9 +148,9 @@ void USROCharacterSelectorWidget::Play()
 	}
 
 	const auto Handle = ConnectionServiceClient->InitConnectGameServer();
-	FGrpcSroCharactersCharacterTarget Request;
-	Request.Target.Id = Character->BaseData.Id;
-	Request.Target.TargetCase = EGrpcSroCharactersCharacterTargetTarget::Id;
+	FGrpcSroCharacterCharacterTarget Request;
+	Request.Type.Id = Character->BaseData.Id;
+	Request.Type.TypeCase = EGrpcSroCharacterCharacterTargetType::Id;
 	ConnectionServiceClient->ConnectGameServer(Handle, Request, GI->AuthToken);
 	
 	PlayThrobber->SetVisibility(ESlateVisibility::HitTestInvisible);
@@ -204,22 +204,12 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(
 	});
 	
 	GI->ChatManager->ConnectAllChannels();
-
-	// URL = FString::Format(
-	// 	TEXT("127.0.0.1:7777?t={0}?c={1}"),
-	// 	static_cast<FStringFormatOrderedArguments>(
-	// 		TArray<FStringFormatArg, TFixedAllocator<4>>
-	// 		{
-	// 			FStringFormatArg(PC->AuthToken),
-	// 			FStringFormatArg(Character->BaseData.Name),
-	// 		}));
-
 }
 
 void USROCharacterSelectorWidget::OnGetCharactersReceived(
 	FGrpcContextHandle Handle,
 	const FGrpcResult& GrpcResult,
-	const FGrpcSroCharactersCharactersDetails& Response)
+	const FGrpcSroCharacterCharactersDetails& Response)
 {
 	for (auto CharacterData : Response.Characters)
 	{

@@ -19,4 +19,11 @@ class SRO_API ASROPlayerState : public APlayerState
 	virtual void BeginPlay() override;
 
 	virtual FString GetPlayerNameCustom() const override;
+
+public:
+	UPROPERTY()
+	FVector StartingLocation;
+	
+	UPROPERTY()
+	FRotator StartingRotation;
 };

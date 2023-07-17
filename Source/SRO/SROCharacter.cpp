@@ -1,13 +1,19 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SROCharacter.h"
+
+#include "SRO.h"
+#include "SROPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Save/SROSaveStatics.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+#include "UI/SROHud.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ASROCharacter
@@ -51,13 +57,25 @@ ASROCharacter::ASROCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	NameText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("NameText"));
+	NameText->SetupAttachment(RootComponent);
+	NameText->SetText(FText::FromString(""));
+	
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	MaxHealth = 100;
+	CurrentHealth = MaxHealth;
 }
 
 void ASROCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	ConnectionDateTime = FDateTime::Now();
+}
+
+void ASROCharacter::BeginDestroy()
+{
+	Super::BeginDestroy();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,7 +94,7 @@ void ASROCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &ASROCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &ASROCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &ASROCharacter::LookUpAtRate);
@@ -89,6 +107,8 @@ void ASROCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Adjust Camera", IE_Released, this, &ASROCharacter::OnMouseReleased);
 	
 	PlayerInputComponent->BindAction("ZoomCamera", IE_Pressed, this, &ASROCharacter::ZoomCameraAtRate);
+	
+	PlayerInputComponent->BindAction("Next Fighting Target", IE_Pressed, this, &ASROCharacter::NextFightingTarget);
 }
 
 void ASROCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -130,6 +150,21 @@ void ASROCharacter::ZoomCameraAtRate(FKey Key)
 		MaximumCameraDistance);
 }
 
+void ASROCharacter::NextFightingTarget()
+{
+	
+}
+
+void ASROCharacter::AddControllerYawInput(float Value)
+{
+	Super::AddControllerYawInput(Value);
+
+	if (!IsMouseDown)
+	{
+		MoveRight(0);
+	}
+}
+
 void ASROCharacter::TurnAtRate(float Rate)
 {
 	if (IsMouseDown)
@@ -146,6 +181,64 @@ void ASROCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+}
+
+FUInt64 ASROCharacter::GetPlayTimespan() const
+{
+	const auto span = FDateTime::Now().ToUnixTimestamp() - ConnectionDateTime.ToUnixTimestamp();
+	if (span < 0)
+	{
+		return 0;
+	}
+
+	return FUInt64{static_cast<unsigned long long>(span)};
+}
+
+void ASROCharacter::SetBaseCharacter(FGrpcSroCharacterCharacterDetails NewCharacterDetails)
+{
+	
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		CharacterDetails = NewCharacterDetails;
+		OnCharacterDetailsUpdated();
+	}
+}
+
+
+void ASROCharacter::OnRep_CharacterDetails()
+{
+	OnCharacterDetailsUpdated();
+}
+
+void ASROCharacter::OnCharacterDetailsUpdated()
+{
+	NameText->SetText(FText::FromString(CharacterDetails.Name));
+	if (CharacterDetails.Name != "")
+	{
+		NameText->SetVisibility(true);
+	}
+}
+
+FGrpcSroCharacterCharacterDetails& ASROCharacter::GetCharacterDetails()
+{
+	return CharacterDetails;
+}
+
+void ASROCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASROCharacter, CharacterDetails);
+	DOREPLIFETIME(ASROCharacter, FightingTarget);
+}
+
+void ASROCharacter::NotifyActorOnClicked(FKey ButtonPressed)
+{
+	Super::NotifyActorOnClicked(ButtonPressed);
+	ASROPlayerController* PC = Cast<ASROPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC)
+	{
+		PC->SetTarget(this);
+	}
 }
 
 void ASROCharacter::MoveForward(float Value)
@@ -176,3 +269,4 @@ void ASROCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+

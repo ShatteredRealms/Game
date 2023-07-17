@@ -29,7 +29,7 @@ FReply UDraggableResizableWidget::NativeOnMouseButtonDown(const FGeometry& InGeo
 	const auto CanvasPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(this);
 	OriginalWidgetPosition = CanvasPanelSlot->GetPosition();
 	OriginalWidgetSize = CanvasPanelSlot->GetSize();
-	ClampedWidgetPosition = OriginalWidgetPosition + OriginalWidgetSize - MinSize;
+	ClampedWidgetPosition = OriginalWidgetPosition + OriginalWidgetSize - GetMinSize();
 	OriginalRelativeClickPosition = OriginalClickPosition - OriginalWidgetPosition;
 
 	if (bResizable)
@@ -188,6 +188,9 @@ FReply UDraggableResizableWidget::NativeOnMouseMove(const FGeometry& InGeometry,
 		FVector2D NewSize = CanvasPanelSlot->GetSize();
 		FVector2D NewPos = CanvasPanelSlot->GetPosition();
 
+		FVector2D MinSize = GetMinSize();
+		FVector2D MaxSize = GetMaxSize();
+
 		if (RightClicked)
 		{
 			NewSize.X = FMath::Clamp(CurrentRelativeClickPosition.X, MinSize.X, MaxSize.X);
@@ -237,4 +240,14 @@ void UDraggableResizableWidget::NativeOnMouseLeave(const FPointerEvent& InMouseE
 	{
 		GetOwningPlayer()->CurrentMouseCursor = EMouseCursor::Type::Default;
 	}
+}
+
+FVector2D UDraggableResizableWidget::GetMinSize()
+{
+	return {10, 10};
+}
+
+FVector2D UDraggableResizableWidget::GetMaxSize()
+{
+	return {10000,10000};
 }

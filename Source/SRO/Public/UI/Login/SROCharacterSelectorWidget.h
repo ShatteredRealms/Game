@@ -10,7 +10,7 @@
 #include "Components/ListView.h"
 #include "Components/TextBlock.h"
 #include "Components/Throbber.h"
-#include "SSroCharacters/CharactersService.h"
+#include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionClient.h"
 #include "SROCharacterSelectorWidget.generated.h"
 
@@ -23,7 +23,7 @@ class SRO_API USROCharacterSelectorWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	UCharactersServiceClient* CharactersServiceClient;
+	UCharacterServiceClient* CharacterServiceClient;
 
 	UConnectionServiceClient* ConnectionServiceClient;
 	
@@ -80,7 +80,7 @@ private:
 	void OnConnectResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroGamebackendConnectGameServerResponse& Response);
 
 	UFUNCTION()
-	void OnGetCharactersReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharactersCharactersDetails& Response);
+	void OnGetCharactersReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharacterCharactersDetails& Response);
 };
 
 

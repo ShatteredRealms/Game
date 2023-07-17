@@ -87,14 +87,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText Name = FText::FromString("New Panel");
 
-	/** Minimum size the widget can be */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector2D MinSize;
-
-	/** Maximum size the widget can be */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector2D MaxSize = {10000,10000};
-
 	/** Thickness from the edge that can still be considered a click on the edge */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double DragThickness = 5;
@@ -110,4 +102,10 @@ public:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual FVector2D GetMinSize();
+
+	UFUNCTION(BlueprintCallable)
+	virtual FVector2D GetMaxSize();
 };

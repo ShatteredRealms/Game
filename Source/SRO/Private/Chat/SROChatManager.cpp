@@ -14,15 +14,15 @@ class UTurboLinkGrpcManager;
 
 void USROChatManager::OnChatMessageReceived(const FGrpcContextHandle Handle, const FGrpcResult& Result, const FGrpcSroChatChatMessage& Message)
 {
-	UChatChannel* ChatChannel = GetChannel(1);
+	UChatChannel* ChatChannel = GetChatChannelByHandle(Handle);
 	if (!ChatChannel)
 	{
-		UE_LOG(LogSRO, Warning, TEXT("Unable to find chat channel %d"), 1);
+		UE_LOG(LogSRO, Warning, TEXT("Unable to find chat channel for handle %d"), Handle.Value);
 		return;
 	}
 
 	ChatChannel->Messages.Add(Message);
-	ChatMessageReceivedDelegate.Broadcast(Message, 1);
+	ChatMessageReceivedDelegate.Broadcast(Message, ChatChannel->Struct.Id);
 }
 
 void USROChatManager::OnStatusChanged(FGrpcContextHandle Handle, EGrpcContextState NewState)
@@ -66,9 +66,9 @@ void USROChatManager::ConnectAllChannels()
 {
 	// Request all authorized chat channels
 	const FGrpcContextHandle Handle = ChatServiceClient->InitGetAuthorizedChatChannels();
-	FGrpcSroCharactersCharacterTarget Request;
-	Request.Target = FGrpcSroCharactersCharacterTargetTarget{};
-	Request.Target.Id = GameInstance->SelectedCharacterId;
+	FGrpcSroCharacterCharacterTarget Request;
+	Request.Type = FGrpcSroCharacterCharacterTargetType{};
+	Request.Type.Id = GameInstance->SelectedCharacterId;
 	ChatServiceClient->GetAuthorizedChatChannels(Handle, Request, GameInstance->AuthToken);
 }
 

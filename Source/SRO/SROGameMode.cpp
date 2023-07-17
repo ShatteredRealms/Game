@@ -4,7 +4,6 @@
 
 #include "HttpModule.h"
 #include "JWTGenerator.h"
-#include "JWTPluginBPLibrary.h"
 #include "SRO.h"
 #include "SROCharacter.h"
 #include "SROGameSession.h"
@@ -17,6 +16,7 @@
 #include "GameFramework/HUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/TypeContainer.h"
+#include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionService.h"
 #include "Util/SROWebLibrary.h"
 
@@ -28,16 +28,32 @@ ASROGameMode::ASROGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+	else
+	{
+		DefaultPawnClass = ASROCharacter::StaticClass();
+	}
 	
 	static ConstructorHelpers::FClassFinder<AHUD> SROHUDBPClass(TEXT("/Game/SRO/Core/UI/BP_SROHud"));
 	if (SROHUDBPClass.Class != NULL)
 	{
 		HUDClass = SROHUDBPClass.Class;
 	}
+	else
+	{
+		HUDClass = ASROHud::StaticClass();
+	}
+	
+	static ConstructorHelpers::FClassFinder<ASROPlayerController> SROPlayerControllerBPClass(TEXT("/Game/SRO/Core/Gameplay/BP_SROPlayerController"));
+	if (SROPlayerControllerBPClass.Class != NULL)
+	{
+		PlayerControllerClass = SROPlayerControllerBPClass.Class;
+	}
+	else
+	{
+		PlayerControllerClass = ASROPlayerController::StaticClass();
+	}
 	
 	PlayerStateClass = ASROPlayerState::StaticClass();
-
-	PlayerControllerClass = ASROPlayerController::StaticClass();
 
 	GameStateClass = ASROGameState::StaticClass();
 
@@ -58,6 +74,20 @@ UAgonesComponent* ASROGameMode::GetAgonesSDK(UObject* WorldContextObject)
 	return nullptr;
 }
 
+void ASROGameMode::OnEditCharacterResponseReceived(
+	FGrpcContextHandle Handle,
+	const FGrpcResult& GrpcResult,
+	const FGrpcGoogleProtobufEmpty& Response)
+{
+	if (GrpcResult.Code != EGrpcResultCode::Ok)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Failed to edit character: %s"), *GrpcResult.Message)
+		return;
+	}
+	
+	UE_LOG(LogSRO, Display, TEXT("Edit character successful"));
+}
+
 void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -65,9 +95,10 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	// Get the server Name
 #if UE_BUILD_DEVELOPMENT
 	ServerName = "localhost";
+	AgonesMapName = "Scene_Demo";
 #else
 	FGameServerDelegate GameServerSuccessDelegate;
-	GameServerSuccessDelegate.BindDynamic(this, &ASROGameMode::OneGameServerDetailsReceived);
+	GameServerSuccessDelegate.BindDynamic(this, &ASROGameMode::OnGameServerDetailsReceived);
 	AgonesSDK->GameServer(GameServerSuccessDelegate, {});
 #endif
 
@@ -115,7 +146,22 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
 #endif
 
-	
+	// Setup connection service
+	auto CharacterService = Cast<UCharacterService>(TLM->MakeService("CharacterService"));
+	if (!CharacterService)
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to create connection service"));
+		return;
+	}
+
+	CharacterServiceClient = CharacterService->MakeClient();
+	CharacterServiceClient->OnEditCharacterResponse.AddUniqueDynamic(this, &ASROGameMode::OnEditCharacterResponseReceived);
+
+#if UE_BUILD_DEVELOPMENT
+	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceDev")));
+#else
+	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceProd")));
+#endif
 }
 
 
@@ -138,23 +184,6 @@ void ASROGameMode::PreLogin(const FString& Options, const FString& Address, cons
 	const FPendingConnection PendingConnection{Options, Address, UniqueId};
 	PendingConnections.Add(Handle, PendingConnection);
 	ConnectionServiceClient->VerifyConnect(Handle, Request, AuthToken);
-
-	// while (PendingConnections.Find(Handle)->Status == CONNECTING)
-	// {
-	// 	FGenericPlatformProcess::ConditionalSleep([this, Handle]
-	// 	{
-	// 		return PendingConnections.Find(Handle)->Status == CONNECTING;
-	// 	}, 0.0);
-	// }
-
-	// auto PendingConnection = PendingConnections.Find(Handle);
-	// if (PendingConnection->Status == REJECTED)
-	// {
-	// 	ErrorMessage = TEXT("Connection rejected");
-	// 	return;
-	// }
-
-	// Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
 APlayerController* ASROGameMode::SpawnPlayerControllerCommon(ENetRole InRemoteRole, FVector const& SpawnLocation,
@@ -182,7 +211,7 @@ APlayerController* ASROGameMode::SpawnPlayerControllerCommon(ENetRole InRemoteRo
 FString ASROGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId,
                                     const FString& Options, const FString& Portal)
 {
-	auto CharacterDetails = AcceptedConnections.Find(UniqueId);
+	FGrpcSroCharacterCharacterDetails* CharacterDetails = AcceptedConnections.Find(UniqueId);
 	if (!CharacterDetails)
 	{
 		return FString(TEXT("Connection not expected"));
@@ -191,7 +220,8 @@ FString ASROGameMode::InitNewPlayer(APlayerController* NewPlayerController, cons
 	check(NewPlayerController);
 
 	// The player needs a PlayerState to register successfully
-	if (NewPlayerController->PlayerState == nullptr)
+	auto PlayerState = Cast<ASROPlayerState>(NewPlayerController->PlayerState);
+	if (!PlayerState)
 	{
 		return FString(TEXT("PlayerState is null"));
 	}
@@ -204,23 +234,94 @@ FString ASROGameMode::InitNewPlayer(APlayerController* NewPlayerController, cons
 	
 	// Set the position
 	FString ErrorMessage;
-	if (!CharacterDetails->Location)
+	if (CharacterDetails->Location.World == "")
 	{
+		UE_LOG(LogSRO, Warning, TEXT("Location world not set"));
 		if (!UpdatePlayerStartSpot(NewPlayerController, Portal, ErrorMessage))
 		{
-			UE_LOG(LogGameMode, Warning, TEXT("InitNewPlayer: %s"), *ErrorMessage);
+			UE_LOG(LogSRO, Warning, TEXT("InitNewPlayer: %s"), *ErrorMessage);
 		}
+		
+		PlayerState->StartingLocation = NewPlayerController->StartSpot->GetActorLocation();
+		PlayerState->StartingRotation = NewPlayerController->StartSpot->GetActorRotation();
 	}
 	else
 	{
-		FRotator StartRotation(0, 0, 0);
-		FVector Location(CharacterDetails->Location->X, CharacterDetails->Location->Y, CharacterDetails->Location->Z);
-		NewPlayerController->SetInitialLocationAndRotation(Location, StartRotation);
+		UE_LOG(LogSRO, Warning, TEXT("Loading previous player position"));
+		PlayerState->StartingLocation = FVector(
+			CharacterDetails->Location.X,
+			CharacterDetails->Location.Y,
+			CharacterDetails->Location.Z);
+		PlayerState->StartingRotation = FRotator(
+			CharacterDetails->Location.Pitch,
+			CharacterDetails->Location.Yaw,
+			CharacterDetails->Location.Roll);
 	}
 
-	AcceptedConnections.Remove(UniqueId);
-
+	auto Character = Cast<ASROCharacter>(NewPlayerController->GetCharacter());
+	if (Character)
+	{
+		return ErrorMessage; 
+	}
+	
 	return ErrorMessage;
+}
+
+void ASROGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	
+	auto Character = Cast<ASROCharacter>(NewPlayer->GetCharacter());
+	if (!Character)
+	{
+		return;
+	}
+
+	auto Details = AcceptedConnections.Find(NewPlayer->NetConnection->PlayerId);
+	if (!Details)
+	{
+		return;
+	}
+
+	Character->SetBaseCharacter(*Details);
+	
+	AcceptedConnections.Remove(NewPlayer->NetConnection->PlayerId);
+}
+
+APawn* ASROGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot)
+{
+	auto PlayerState = Cast<ASROPlayerState>(NewPlayer->PlayerState);
+	if (!PlayerState)
+	{
+		return Super::SpawnDefaultPawnFor_Implementation(NewPlayer, StartSpot);
+	}
+	
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnInfo.Owner = this;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.bDeferConstruction = false;
+	
+	APawn* NewPawn = GetWorld()->SpawnActor<APawn>(
+		GetDefaultPawnClassForController(NewPlayer),
+		PlayerState->StartingLocation,
+		PlayerState->StartingRotation,
+		SpawnInfo);
+	
+	return NewPawn;
+}
+
+void ASROGameMode::Logout(AController* Exiting)
+{
+	ASROPlayerController* PC = Cast<ASROPlayerController>(Exiting);
+	if (!PC)
+	{
+		Super::Logout(Exiting);
+		return;
+	}
+	
+	SyncCharacter(PC);
 }
 
 void ASROGameMode::OnKeycloakError(const FString& Error)
@@ -231,7 +332,7 @@ void ASROGameMode::OnKeycloakError(const FString& Error)
 void ASROGameMode::OnVerifyConnectResponseReceived(
 	FGrpcContextHandle Handle,
 	const FGrpcResult& GrpcResult,
-	const FGrpcSroCharactersCharacterDetails& Response)
+	const FGrpcSroCharacterCharacterDetails& Response)
 {
 	const auto PendingConnection = PendingConnections.Find(Handle);
 	FString ErrorMessage = GrpcResult.Message;
@@ -251,15 +352,54 @@ void ASROGameMode::OnVerifyConnectResponseReceived(
 			AcceptedConnections.Add(PendingConnection->UniqueId, Response);
 		}
 	}
-
-	PendingConnections.Remove(Handle);
 	
 	Super::PreLogin(PendingConnection->Options, PendingConnection->Address, PendingConnection->UniqueId, ErrorMessage);
 }
 
-void ASROGameMode::OneGameServerDetailsReceived(const FGameServerResponse& Response)
+void ASROGameMode::OnGameServerDetailsReceived(const FGameServerResponse& Response)
 {
 	ServerName = Response.ObjectMeta.Name;
+	
+	const auto MapNamePtr = Response.ObjectMeta.Labels.Find("map");
+	if (MapNamePtr)
+	{
+		AgonesMapName = *MapNamePtr;
+	}
+	else
+	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to get map name from server"));
+	}
+}
+
+void ASROGameMode::SyncCharacter(ASROPlayerController* PC)
+{
+	auto Character = Cast<ASROCharacter>(PC->GetCharacter());
+	if (!Character)
+	{
+		return;
+	}
+
+	FGrpcSroLocation Location;
+	Location.World = AgonesMapName;
+	Location.X = PC->GetPawn()->GetActorLocation().X;
+	Location.Y = PC->GetPawn()->GetActorLocation().Y;
+	Location.Z = PC->GetPawn()->GetActorLocation().Z;
+	Location.Roll = PC->GetPawn()->GetActorRotation().Roll;
+	Location.Pitch = PC->GetPawn()->GetActorRotation().Pitch;
+	Location.Yaw = PC->GetPawn()->GetActorRotation().Yaw;
+	
+	FGrpcSroCharacterEditCharacterRequest Request;
+	Request.Target.Type.TypeCase = EGrpcSroCharacterCharacterTargetType::Id;
+	Request.Target.Type.Id = Character->GetCharacterDetails().Id;
+	Request.Optional_location.Optional_locationCase = EGrpcSroCharacterEditCharacterRequestOptional_location::Location;
+	Request.Optional_location.Location = Location;
+	Request.Optional_play_time.PlayTime = Character->GetCharacterDetails().PlayTime + Character->GetPlayTimespan();
+	
+	const auto Handle = CharacterServiceClient->InitEditCharacter();
+	CharacterServiceClient->EditCharacter(Handle, Request, AuthToken);
+
+	PC->GetPawn()->Destroy();
+	PC->SetPawn(nullptr);
 }
 
 void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -278,6 +418,7 @@ void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpRes
 
 void ASROGameMode::UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken)
 {
+	UE_LOG(LogSRO, Display, TEXT("Updated auth and refresh tokens"))
 	AuthToken = NewAuthToken;
 	RefreshToken = NewRefreshToken;
 }

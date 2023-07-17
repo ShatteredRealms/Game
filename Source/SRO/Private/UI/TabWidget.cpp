@@ -15,11 +15,11 @@ void UTabWidget::SetSelected(bool bNewSelection)
 	bSelected = bNewSelection;
 	if (bSelected)
 	{
-		TabButton->WidgetStyle = ActiveStyle;
+		TabButton->SetStyle(ActiveStyle);
 	}
 	else
 	{
-		TabButton->WidgetStyle = InactiveStyle;
+		TabButton->SetStyle(InactiveStyle);
 	}
 }
 

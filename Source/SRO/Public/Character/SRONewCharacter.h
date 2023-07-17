@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SSroCharacters/CharactersMessage.h"
 #include "SRONewCharacter.generated.h"
 
 UCLASS()
@@ -14,10 +13,10 @@ class SRO_API ASRONewCharacter : public AActor
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGrpcSroCharactersRealm Realm;
+	FString Realm;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGrpcSroCharactersGender Gender;
+	FString Gender;
 	
 public:	
 	// Sets default values for this actor's properties

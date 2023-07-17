@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SSroCharacters/CharactersMessage.h"
 #include "UObject/Object.h"
 #include "SROBaseCharacterData.generated.h"
 
@@ -17,10 +16,10 @@ class SRO_API USROBaseCharacterData : public UObject
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGrpcSroCharactersGender Gender;
+	FString Gender;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGrpcSroCharactersRealm Realm;
+	FString Realm;
 
 	// @TODO(wil): Data about character face, hair, etc ...
 };

@@ -73,3 +73,11 @@ void UDraggableResizableBaseWindow::SetCloseable(bool IsCloseable)
 {
 	CloseButton->SetVisibility(IsCloseable ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 }
+
+FVector2D UDraggableResizableBaseWindow::GetMinSize()
+{
+	// +10 for offset (5 each side)
+	// +8 for padding (4 each side)
+	auto X = FMath::Max(Tabs->GetDesiredSize().X + 10 + 8, 10.0);
+	return {X, 100.0};
+}

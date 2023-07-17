@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SROBaseCharacterData.h"
-#include "TurboLinkGrpcMessage.h"
-#include "SSroCharacters/CharactersMessage.h"
+#include "SSroCharacter/CharacterMessage.h"
 #include "SROBaseCharacter.generated.h"
 
 /**
@@ -18,5 +17,5 @@ class SRO_API USROBaseCharacter : public UObject
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGrpcSroCharactersCharacterDetails BaseData;
+	FGrpcSroCharacterCharacterDetails BaseData;
 };
