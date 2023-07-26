@@ -32,4 +32,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE AFightingTarget* GetTarget() { return Target; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void TargetUpdated();
 };

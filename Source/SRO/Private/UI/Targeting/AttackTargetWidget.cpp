@@ -5,11 +5,13 @@
 
 void UAttackTargetWidget::SetTarget(AFightingTarget* NewTarget)
 {
-	if (NewTarget)
+	Target = NewTarget;
+	
+	if (Target)
 	{
-		TargetNameText->SetText(FText::FromString(NewTarget->GetDisplayName()));
-		Target = NewTarget;
+		TargetNameText->SetText(FText::FromString(Target->GetDisplayName()));
 		SetVisibility(ESlateVisibility::Visible);
+		TargetUpdated();
 		return;
 	}
 

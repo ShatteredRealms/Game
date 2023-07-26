@@ -17,7 +17,4 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGrpcSroChatChatMessage ChatMessage;
-
-	UFUNCTION(BlueprintCallable)
-	FString GenerateText();
 };

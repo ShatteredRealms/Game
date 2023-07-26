@@ -3,7 +3,6 @@
 
 #include "SROPlayerController.h"
 
-#include "SRO.h"
 #include "SROCharacter.h"
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,7 +10,9 @@
 #include "Save/SROSaveStatics.h"
 #include "UI/SROHud.h"
 
-ASROPlayerController::ASROPlayerController() : Super()
+ASROPlayerController::ASROPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer),
+	CurrentTarget(nullptr),
+	AttackTargetIndex(-1)
 {
 	bEnableClickEvents = true;
 }
@@ -37,13 +38,14 @@ void ASROPlayerController::PreDisconnect()
 
 bool ASROPlayerController::InputKey(const FInputKeyParams& Params)
 {
-	if (Params.Key != EKeys::Enter)
+	ASROHud* SROHUD = Cast<ASROHud>(GetHUD());
+	if (!SROHUD)
 	{
 		return Super::InputKey(Params);
 	}
-	
-	ASROHud* SROHUD = Cast<ASROHud>(GetHUD());
-	if (!SROHUD)
+
+	ASROCharacter* SROCharacter = Cast<ASROCharacter>(GetCharacter());
+	if (!SROCharacter)
 	{
 		return Super::InputKey(Params);
 	}
@@ -59,9 +61,29 @@ bool ASROPlayerController::InputKey(const FInputKeyParams& Params)
 
 	if (Params.Key == EKeys::Escape && Params.Event == IE_Pressed)
 	{
+		if (SROCharacter->GetFightingTarget())
+		{
+			SROCharacter->StopFighting();
+			UpdateTargetingUI();
+			return true;
+		}
+		
 		if (CurrentTarget)
 		{
 			ClearTarget();
+			return true;
+		}
+	}
+
+	if (Params.Key == EKeys::LeftMouseButton
+		&& Params.Event == IE_Released)
+	{
+		FHitResult Result;
+		GetHitResultUnderCursor(ECC_WorldStatic, false, Result);
+		AActor* Actor = Result.GetActor();
+		if (ATarget* Target = Cast<ATarget>(Actor))
+		{
+			SetTarget(Target);
 			return true;
 		}
 	}
@@ -69,18 +91,133 @@ bool ASROPlayerController::InputKey(const FInputKeyParams& Params)
 	return Super::InputKey(Params);
 }
 
-void ASROPlayerController::OnPossess(APawn* InPawn)
+void ASROPlayerController::CancelAction()
 {
-	Super::OnPossess(InPawn);
-	ASROCharacter* SROCharacter = Cast<ASROCharacter>(InPawn);
-	if (SROCharacter)
+	if (!IsLocalController())
 	{
-		SROCharacter->OnFightingTargetChanged().AddUObject(this, &ASROPlayerController::UpdateFightingTargetUI);
+		return;
+	}
+	
+	if (CurrentTarget)
+	{
+		CurrentTarget->SetTargeted(false);
+		return;
+	}
+
+	// Handle open inventory interfaces
+}
+
+void ASROPlayerController::NextAttackTarget()
+{
+	if (!GetCharacter())
+	{
+		return;
+	}
+	
+	// @TODO(wil): Find way to cache this array and keep up to date
+	TArray<AActor*> Targets;
+	UGameplayStatics::GetAllActorsOfClass(this, AFightingTarget::StaticClass(), Targets);
+
+	// Only target is self
+	if (Targets.Num() == 1)
+	{
+		return;
+	}
+
+	// Only a single target
+	if (Targets.Num() == 2)
+	{
+		if (Targets[0] != GetCharacter())
+		{
+			SetTarget(Cast<ATarget>(Targets[0]));
+		}
+		else
+		{
+			SetTarget(Cast<ATarget>(Targets[1]));
+		}
+		
+		return;
+	}
+	
+	Targets.Sort();
+
+	// Check index validity
+	if (AttackTargetIndex >= Targets.Num())
+	{
+		AttackTargetIndex = -1;
+	}
+
+	if (AttackTargetIndex == -1)
+	{
+		for (int idx = 0; idx < Targets.Num(); idx++)
+		{
+			if (CheckNextAttackTarget(Targets, idx))
+			{
+				return;
+			}
+		}
+	}
+	else
+	{
+		for (int idx = AttackTargetIndex + 1; idx != AttackTargetIndex; idx++)
+		{
+			if (idx >= Targets.Num())
+			{
+				idx = 0;
+			}
+			
+			if (CheckNextAttackTarget(Targets, idx))
+			{
+				return;
+			}
+		}
+	}
+
+	if (AttackTargetIndex != -1
+		&& CurrentTarget != Targets[AttackTargetIndex])
+	{
+		AttackTargetIndex = -1;
 	}
 }
 
-void ASROPlayerController::UpdateTargetUI()
+bool ASROPlayerController::CheckNextAttackTarget(TArray<AActor*> Targets, const int Index)
 {
+	AFightingTarget* Target = Cast<AFightingTarget>(Targets[Index]);
+	
+	if (!Target
+		|| Target == GetCharacter()
+		|| GetCharacter()->GetDistanceTo(Target) > MaxNewTargetDistance)
+	{
+		return false;
+	}
+	
+	FHitResult Result;
+	GetCharacter()->ActorLineTraceSingle(Result, GetCharacter()->GetActorLocation(), Target->GetActorLocation(), ECC_Visibility, {});
+	
+	// if (Result.Component->GetAttachmentRoot() == Target->GetRootComponent())
+	// {
+		if (SetTarget(Target))
+		{
+			AttackTargetIndex = Index;
+			return true;
+		}
+	// }
+
+	return false;
+}
+
+
+void ASROPlayerController::UpdateTargetingUI()
+{
+	UpdateFightingTargetUI();
+
+	if (!CurrentTarget)
+	{
+		ASROHud* HUD = GetHUD<ASROHud>();
+		HUD->BaseUI->AttackTargetsWidget->SetAttackTarget(nullptr);
+		return;
+	}
+	
 	if (CurrentTarget->GetClass()->IsChildOf(AFightingTarget::StaticClass()))
 	{
 		UpdateAttackTargetUI();
@@ -112,6 +249,10 @@ void ASROPlayerController::UpdateFightingTargetUI()
 	}
 	
 	ASROHud* HUD = GetHUD<ASROHud>();
+	if (!HUD)
+	{
+		return;
+	}
 
 	auto SROCharacter = Cast<ASROCharacter>(GetCharacter());
 	if (SROCharacter)
@@ -120,13 +261,12 @@ void ASROPlayerController::UpdateFightingTargetUI()
 	}
 }
 
-void ASROPlayerController::SetTarget(ATarget* NewTarget)
+bool ASROPlayerController::SetTarget(ATarget* NewTarget)
 {
-	if (!IsLocalController()
-		&& GetLocalRole() != ROLE_Authority
-		&& NewTarget == CurrentTarget)
+	if (NewTarget == CurrentTarget
+		|| (!IsLocalController() && GetLocalRole() != ROLE_Authority))
 	{
-		return;
+		return false;
 	}
 	
 	if (CurrentTarget)
@@ -140,13 +280,20 @@ void ASROPlayerController::SetTarget(ATarget* NewTarget)
 		CurrentTarget->SetTargeted(true);
 	}
 
-	UpdateTargetUI();
+	if ((CurrentTarget && CurrentTarget->GetClass()->IsChildOf(AFightingTarget::StaticClass()))
+		|| !CurrentTarget)
+	{
+		AttackTargetIndex = -1;
+	}
+
+	UpdateTargetingUI();
 	CurrentTargetUpdated();
+	return true;
 }
 
 void ASROPlayerController::StartAttack()
 {
-	if (!IsLocalController() || GetLocalRole() != ROLE_Authority)
+	if (!IsLocalController() && GetLocalRole() != ROLE_Authority)
 	{
 		return;
 	}
@@ -164,15 +311,23 @@ void ASROPlayerController::StartAttack()
 		return;
 	}
 	
-	auto SROCharacter = Cast<ASROCharacter>(GetCharacter());
-	if (SROCharacter)
+	ASROCharacter* SROCharacter = Cast<ASROCharacter>(GetCharacter());
+	if (!SROCharacter)
 	{
 		// @TODO(wil): Notify
 		return;
 	}
 
-	SROCharacter->StartFighting(CastedCurrentTarget);
-	CurrentTarget = nullptr;
+	if (SROCharacter->GetFightingTarget() == CastedCurrentTarget)
+	{
+		SROCharacter->StopFighting();
+	}
+	else
+	{
+		SROCharacter->StartFighting(CastedCurrentTarget);
+	}
+	
+	UpdateFightingTargetUI();
 	UpdateAttackTargetUI();
 }
 
@@ -190,7 +345,7 @@ void ASROPlayerController::EndAttack()
 		SROCharacter->StopFighting();
 	}
 	
-	UpdateFightingTargetUI();
+	UpdateTargetingUI();
 	FightTargetUpdated();
 }
 
@@ -198,7 +353,6 @@ void ASROPlayerController::ClearTarget()
 {
 	CurrentTarget->SetTargeted(false);
 	CurrentTarget = nullptr;
-	
-	ASROHud* HUD = GetHUD<ASROHud>();
-	HUD->BaseUI->AttackTargetsWidget->SetAttackTarget(nullptr);
+	AttackTargetIndex = -1;
+	UpdateTargetingUI();
 }

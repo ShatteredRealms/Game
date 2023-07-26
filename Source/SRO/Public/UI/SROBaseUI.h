@@ -8,7 +8,6 @@
 #include "Chat/ChatTabWidget.h"
 #include "Chat/ChatWindow.h"
 #include "Components/CanvasPanel.h"
-#include "GameFramework/FightingTarget.h"
 #include "Save/ChatPanelData.h"
 #include "SRO/SROGameInstance.h"
 #include "Targeting/AttackTargetsWidget.h"

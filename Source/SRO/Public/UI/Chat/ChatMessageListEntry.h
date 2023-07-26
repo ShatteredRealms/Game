@@ -6,6 +6,8 @@
 #include "Blueprint/IUserObjectListEntry.h"
 #include "Blueprint/UserWidget.h"
 #include "Chat/SROChatMessage.h"
+#include "Components/EditableText.h"
+#include "Components/MultiLineEditableText.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "SSroChat/ChatMessage.h"
@@ -24,7 +26,13 @@ public:
 	UChatMessage* ChatMessage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* MessageText;
+	UMultiLineEditableText* MessageText;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	// UEditableText* CharacterNameText;
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	// UTextBlock* ChannelNameText;
 	
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 

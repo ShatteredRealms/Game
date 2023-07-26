@@ -21,9 +21,15 @@ private:
 	/** Current target */
 	UPROPERTY()
 	ATarget* CurrentTarget;
+
+	UPROPERTY()
+	int AttackTargetIndex;
+
+	UPROPERTY(EditDefaultsOnly)
+	uint32 MaxNewTargetDistance = 5000;
 	
 public:
-	ASROPlayerController();
+	ASROPlayerController(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void BeginPlay() override;
 
@@ -43,7 +49,10 @@ public:
 	void ClearTarget();
 	
 	UFUNCTION(BlueprintCallable, Category=Targeting)
-	void SetTarget(ATarget* NewTarget);
+	bool SetTarget(ATarget* NewTarget);
+
+	UFUNCTION(BlueprintCallable, Category=Targeting)
+	FORCEINLINE ATarget* GetTarget() const { return CurrentTarget; }
 
 	/** Blueprint event to tell attack target updated */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -53,13 +62,23 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FightTargetUpdated();
 
-	virtual void OnPossess(APawn* InPawn) override;
+	UFUNCTION(BlueprintCallable)
+	void CancelAction();
+
+	UFUNCTION(BlueprintCallable)
+	void NextAttackTarget();
 	
+	UFUNCTION(BlueprintCallable)
+	void UpdateTargetingUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateAttackTargetUI();
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdateFightingTargetUI();
 private:
 	// HELPER FUNCTIONS
-	void UpdateTargetUI();
-	void UpdateAttackTargetUI();
-	void UpdateFightingTargetUI();
+	bool CheckNextAttackTarget(TArray<AActor*> Targets, const int Index);
 	// END HELPER FUNCTIONS
 };
 

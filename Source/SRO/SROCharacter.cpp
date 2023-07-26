@@ -2,12 +2,14 @@
 
 #include "SROCharacter.h"
 
-#include "SRO.h"
+#include "GameFramework/Character.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "SROPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "Components/TextRenderComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -18,21 +20,18 @@
 //////////////////////////////////////////////////////////////////////////
 // ASROCharacter
 
-ASROCharacter::ASROCharacter()
+ASROCharacter::ASROCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// set our turn rate for input
-	TurnRateGamepad = 50.f;
-
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -56,10 +55,6 @@ ASROCharacter::ASROCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	NameText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("NameText"));
-	NameText->SetupAttachment(RootComponent);
-	NameText->SetText(FText::FromString(""));
 	
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -71,6 +66,13 @@ void ASROCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	ConnectionDateTime = FDateTime::Now();
+	if (ASROPlayerController* PlayerController = Cast<ASROPlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
 void ASROCharacter::BeginDestroy()
@@ -84,65 +86,87 @@ void ASROCharacter::BeginDestroy()
 void ASROCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
-	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ASROCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Move Right / Left", this, &ASROCharacter::MoveRight);
-
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &ASROCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &ASROCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &ASROCharacter::LookUpAtRate);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASROCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &ASROCharacter::TouchStopped);
-
-	PlayerInputComponent->BindAction("Adjust Camera", IE_Pressed, this, &ASROCharacter::OnMousePressed);
-	PlayerInputComponent->BindAction("Adjust Camera", IE_Released, this, &ASROCharacter::OnMouseReleased);
-	
-	PlayerInputComponent->BindAction("ZoomCamera", IE_Pressed, this, &ASROCharacter::ZoomCameraAtRate);
-	
-	PlayerInputComponent->BindAction("Next Fighting Target", IE_Pressed, this, &ASROCharacter::NextFightingTarget);
-}
-
-void ASROCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	Jump();
-}
-
-void ASROCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	StopJumping();
-}
-
-void ASROCharacter::OnMousePressed()
-{
-	IsMouseDown = true;
-}
-
-void ASROCharacter::OnMouseReleased()
-{
-	IsMouseDown = false;
-}
-
-void ASROCharacter::ZoomCameraAtRate(FKey Key)
-{
-	float NewDistance = CameraBoom->TargetArmLength;
-	if (Key == EKeys::MouseScrollDown)
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		NewDistance += BaseCameraZoomRate;
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		//Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASROCharacter::Move);
+
+		//Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASROCharacter::Look);
+		EnhancedInputComponent->BindAction(LookResetAction, ETriggerEvent::Triggered, this, &ASROCharacter::LookReset);
+		EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ASROCharacter::Look);
+
+		// Zooming
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ASROCharacter::ZoomCameraAtRate);
+		
+		// Canceling
+		EnhancedInputComponent->BindAction(CancelAction, ETriggerEvent::Triggered, this, &ASROCharacter::Cancel);
+
+		// Attack 
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASROCharacter::Attack);
+
+		// New Attack Target
+		EnhancedInputComponent->BindAction(NextAttackTargetAction, ETriggerEvent::Triggered, this, &ASROCharacter::NewAttackTarget);
 	}
-	else
+}
+
+void ASROCharacter::Look(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
 	{
-		NewDistance -= BaseCameraZoomRate;
+		// add yaw and pitch input to controller
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ASROCharacter::LookReset(const FInputActionValue& Value)
+{
+	if (Controller != nullptr && GetMesh())
+	{
+		FRotator3d NewRotator = Controller->GetControlRotation();
+		NewRotator.Yaw = GetMesh()->GetComponentRotation().Yaw - GetMesh()->GetRelativeRotation().Yaw;
+		Controller->SetControlRotation(NewRotator);
+	}
+}
+
+void ASROCharacter::ResetFaceFightingTargetTimer_Implementation()
+{
+}
+
+void ASROCharacter::Move(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		// const FRotator Rotation = GetMesh()->GetComponentRotation() - GetMesh()->GetRelativeRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+void ASROCharacter::ZoomCameraAtRate(const FInputActionValue& Value)
+{
+	float NewDistance = CameraBoom->TargetArmLength + BaseCameraZoomRate + Value.GetMagnitude();
 
 	CameraBoom->TargetArmLength = FMath::Clamp(
 		NewDistance,
@@ -150,37 +174,89 @@ void ASROCharacter::ZoomCameraAtRate(FKey Key)
 		MaximumCameraDistance);
 }
 
-void ASROCharacter::NextFightingTarget()
+void ASROCharacter::NextFightingTarget(const FInputActionValue& Value)
 {
-	
-}
-
-void ASROCharacter::AddControllerYawInput(float Value)
-{
-	Super::AddControllerYawInput(Value);
-
-	if (!IsMouseDown)
+	ASROPlayerController* PC = GetController<ASROPlayerController>();
+	if (PC)
 	{
-		MoveRight(0);
+		PC->NextAttackTarget();
 	}
 }
 
-void ASROCharacter::TurnAtRate(float Rate)
+void ASROCharacter::Cancel(const FInputActionValue& Value)
 {
-	if (IsMouseDown)
+	if (FightingTarget)
 	{
-		MoveRight(Rate);
+		StopFighting();
 		return;
 	}
-	
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+
+	ASROPlayerController* PC = GetController<ASROPlayerController>();
+	if (PC)
+	{
+		PC->CancelAction();
+	}
 }
 
-void ASROCharacter::LookUpAtRate(float Rate)
+void ASROCharacter::Attack(const FInputActionValue& Value)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+	ASROPlayerController* PC = GetController<ASROPlayerController>();
+	if (PC)
+	{
+		PC->StartAttack();
+	}
+}
+
+void ASROCharacter::NewAttackTarget(const FInputActionValue& Value)
+{
+	ASROPlayerController* PC = GetController<ASROPlayerController>();
+	if (PC)
+	{
+		PC->NextAttackTarget();
+	}
+}
+
+void ASROCharacter::StartFighting(AFightingTarget* Target)
+{
+	Super::StartFighting(Target);
+	Target->SetAttacked(true);
+	if(ASROPlayerController* PC = GetController<ASROPlayerController>())
+	{
+		PC->UpdateFightingTargetUI();
+	}
+}
+
+void ASROCharacter::StopFighting()
+{
+	Super::StopFighting();
+}
+
+void ASROCharacter::OnTargetedChanged_Implementation()
+{
+	Super::OnTargetedChanged_Implementation();
+	if (UTargetDetailsWidget* TargetDetailsWidget = Cast<UTargetDetailsWidget>(GetDetailsUserWidget()))
+	{
+		TargetDetailsWidget->SetTargeted(bTargeted);
+	}
+}
+
+void ASROCharacter::OnCurrentHealthUpdated_Implementation()
+{
+	Super::OnCurrentHealthUpdated_Implementation();
+	if (UTargetDetailsWidget* TargetDetailsWidget = Cast<UTargetDetailsWidget>(GetDetailsUserWidget()))
+	{
+		TargetDetailsWidget->UpdateHealthPercentage();
+	}
+}
+
+void ASROCharacter::OnMaxHealthUpdated_Implementation()
+{
+	Super::OnMaxHealthUpdated_Implementation();
+	if (UTargetDetailsWidget* TargetDetailsWidget = Cast<UTargetDetailsWidget>(GetDetailsUserWidget()))
+	{
+		TargetDetailsWidget->UpdateHealthBarSize();
+		TargetDetailsWidget->UpdateHealthPercentage();
+	}
 }
 
 FUInt64 ASROCharacter::GetPlayTimespan() const
@@ -196,7 +272,6 @@ FUInt64 ASROCharacter::GetPlayTimespan() const
 
 void ASROCharacter::SetBaseCharacter(FGrpcSroCharacterCharacterDetails NewCharacterDetails)
 {
-	
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		CharacterDetails = NewCharacterDetails;
@@ -204,18 +279,26 @@ void ASROCharacter::SetBaseCharacter(FGrpcSroCharacterCharacterDetails NewCharac
 	}
 }
 
-
 void ASROCharacter::OnRep_CharacterDetails()
 {
 	OnCharacterDetailsUpdated();
 }
 
-void ASROCharacter::OnCharacterDetailsUpdated()
+void ASROCharacter::OnCharacterDetailsUpdated_Implementation()
 {
-	NameText->SetText(FText::FromString(CharacterDetails.Name));
-	if (CharacterDetails.Name != "")
+	DisplayName = CharacterDetails.Name;
+	if (IsLocallyControlled())
 	{
-		NameText->SetVisibility(true);
+		if (!DetailsWidget->GetUserWidgetObject())
+		{
+			auto NewWidget = CreateWidget(GetController<APlayerController>(), DetailsWidget->GetWidgetClass());
+			DetailsWidget->SetWidget(NewWidget);
+		}
+		
+		if (UTargetDetailsWidget* TargetDetailsWidget = Cast<UTargetDetailsWidget>(DetailsWidget->GetUserWidgetObject()))
+		{
+			TargetDetailsWidget->Setup(this);
+		}
 	}
 }
 
@@ -238,35 +321,6 @@ void ASROCharacter::NotifyActorOnClicked(FKey ButtonPressed)
 	if (PC)
 	{
 		PC->SetTarget(this);
-	}
-}
-
-void ASROCharacter::MoveForward(float Value)
-{
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
-	}
-}
-
-void ASROCharacter::MoveRight(float Value)
-{
-	if ( (Controller != nullptr) && (Value != 0.0f) )
-	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
 	}
 }
 
