@@ -24,4 +24,9 @@ void ASROHud::BeginPlay()
 			BaseUI->AddToViewport();
 		}
 	}
+
+	if (ASROPlayerController* SROPC = Cast<ASROPlayerController>(GetOwningPlayerController()))
+	{
+		SROPC->SetupUIForControlledPawn();
+	}
 }

@@ -261,6 +261,67 @@ void ASROPlayerController::UpdateFightingTargetUI()
 	}
 }
 
+void ASROPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	SetupUIForControlledPawn();
+}
+
+void ASROPlayerController::OnUnPossess()
+{
+	if (GetPawn())
+	{
+		GetPawn()->OnTakeAnyDamage.RemoveDynamic(this, &ASROPlayerController::ControlledPawnTookDamage);
+	}
+	
+	Super::OnUnPossess();
+}
+
+void ASROPlayerController::ControlledPawnTookDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (DamagedActor != GetPawn())
+	{
+		DamagedActor->OnTakeAnyDamage.RemoveDynamic(this, &ASROPlayerController::ControlledPawnTookDamage);
+		return;
+	}
+	
+	ASROHud* SROHUD = GetHUD<ASROHud>();
+	if (!SROHUD)
+	{
+		return;
+	}
+	
+	AFightingTarget* FightingTarget = Cast<AFightingTarget>(DamagedActor);
+	if (!FightingTarget)
+	{
+		return;
+	}
+	SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetCurrentHealth() / FightingTarget->GetMaxHealth());
+}
+
+void ASROPlayerController::SetupUIForControlledPawn()
+{
+	if (!GetPawn())
+	{
+		return;
+	}
+	
+	ASROHud* SROHUD = GetHUD<ASROHud>();
+	if (!SROHUD)
+	{
+		return;
+	}
+	
+	GetPawn()->OnTakeAnyDamage.AddDynamic(this, &ASROPlayerController::ControlledPawnTookDamage);
+	
+	AFightingTarget* FightingTarget = Cast<AFightingTarget>(GetPawn());
+	if (FightingTarget)
+	{
+		SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetCurrentHealth() / FightingTarget->GetMaxHealth());
+	}
+}
+
 bool ASROPlayerController::SetTarget(ATarget* NewTarget)
 {
 	if (NewTarget == CurrentTarget

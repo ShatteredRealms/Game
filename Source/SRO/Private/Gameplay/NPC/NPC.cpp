@@ -67,4 +67,3 @@ void ANPC::OnMaxHealthUpdated_Implementation()
 		TargetDetailsWidget->UpdateHealthPercentage();
 	}
 }
-

@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "AttackTargetWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/MoveableWidget.h"
 #include "AttackTargetsWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SRO_API UAttackTargetsWidget : public UUserWidget
+class SRO_API UAttackTargetsWidget : public UMoveableWidget
 {
 	GENERATED_BODY()
 

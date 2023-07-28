@@ -23,7 +23,8 @@ bool USROSaveStatics::ResetSaveGame(ASROPlayerController* PC)
 		return false;
 	}
 
-	UGameplayStatics::SaveGameToSlot(USROSaveGame::CreateDefault(), GetSlotName(PC), 0);
+	auto NewSaveGame = USROSaveGame::CreateDefault();
+	UGameplayStatics::SaveGameToSlot(NewSaveGame, GetSlotName(PC), 0);
 
 	return true;
 }
@@ -80,6 +81,15 @@ bool USROSaveStatics::SaveGame(ASROPlayerController* PC)
 		return false;
 	}
 
+	SaveGame_Chat(SaveGame, HUD);
+	SaveGame_CombatBars(SaveGame, HUD);
+	SaveGame_Targeting(SaveGame, HUD);
+
+	return UGameplayStatics::SaveGameToSlot(SaveGame, GetSlotName(PC), 0);
+}
+
+bool USROSaveStatics::SaveGame_Chat(USROSaveGame* SaveGame, ASROHud* HUD)
+{
 	SaveGame->AllChatPanelData.Empty();
 	
 	// Process chat channels
@@ -120,5 +130,54 @@ bool USROSaveStatics::SaveGame(ASROPlayerController* PC)
 		SaveGame->AllChatPanelData.Add(ChatPanelData);
 	}
 
-	return UGameplayStatics::SaveGameToSlot(SaveGame, GetSlotName(PC), 0);
+	return true;
+}
+
+bool USROSaveStatics::SaveGame_CombatBars(USROSaveGame* SaveGame, ASROHud* HUD)
+{
+	FGeometry Geometry;
+	UCanvasPanelSlot* Slot;
+
+	Slot = Cast<UCanvasPanelSlot>(HUD->BaseUI->HealthBar->Slot);
+	if(!HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry))
+	{
+		UE_LOG(LogSRO, Error, TEXT("UI ERROR: Failed to get geometry for health bar"));
+		return false;
+	}
+	SaveGame->HealthBarPosition = Slot->GetPosition();
+	
+	Slot = Cast<UCanvasPanelSlot>(HUD->BaseUI->ManaBar->Slot);
+	if(!HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry))
+	{
+		UE_LOG(LogSRO, Error, TEXT("UI ERROR: Failed to get geometry for mana bar"));
+		return false;
+	}
+	SaveGame->ManaBarPosition = Slot->GetPosition();
+	
+	Slot = Cast<UCanvasPanelSlot>(HUD->BaseUI->ExperienceBar->Slot);
+	if(!HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry))
+	{
+		UE_LOG(LogSRO, Error, TEXT("UI ERROR: Failed to get geometry for experience bar"));
+		return false;
+	}
+	SaveGame->ExperienceBarPosition = Slot->GetPosition();
+
+	return true;
+}
+
+bool USROSaveStatics::SaveGame_Targeting(USROSaveGame* SaveGame, ASROHud* HUD)
+{
+
+	FGeometry Geometry;
+	UCanvasPanelSlot* Slot;
+
+	Slot = Cast<UCanvasPanelSlot>(HUD->BaseUI->AttackTargetsWidget->Slot);
+	if(!HUD->BaseUI->MainPanel->GetGeometryForSlot(Slot, Geometry))
+	{
+		UE_LOG(LogSRO, Error, TEXT("UI ERROR: Failed to get geometry for health bar"));
+		return false;
+	}
+	SaveGame->AttackTargetsPosition = Slot->GetPosition();
+	
+	return true;
 }

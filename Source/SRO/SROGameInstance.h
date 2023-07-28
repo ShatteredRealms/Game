@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Auth/Keycloak/Keycloak.h"
-#include "Character/SROBaseCharacter.h"
 #include "Chat/SROChatManager.h"
 #include "Engine/GameInstance.h"
 #include "SROGameInstance.generated.h"

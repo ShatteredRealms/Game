@@ -27,7 +27,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	static USROSaveGame* GetSaveGame(ASROPlayerController* PC);
-	
+
 	/**
 	 * Save game for a given character name. If it does not exist, one is created.
 	 * 
@@ -47,4 +47,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	static bool ResetSaveGame(ASROPlayerController* PC);
+
+private:
+	static bool SaveGame_Chat(USROSaveGame* SaveGame, ASROHud* HUD);
+	static bool SaveGame_CombatBars(USROSaveGame* SaveGame, ASROHud* HUD);
+	static bool SaveGame_Targeting(USROSaveGame* SaveGame, ASROHud* HUD);
 };

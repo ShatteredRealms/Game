@@ -12,7 +12,6 @@
 FReply UDraggableResizableWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry,
                                                           const FPointerEvent& InMouseEvent)
 {
-	GEngine->AddOnScreenDebugMessage(100, 0.1f, FColor::Red, "MouseDown");
 	if (!InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
 		return FReply::Unhandled();
@@ -136,47 +135,6 @@ FReply UDraggableResizableWidget::NativeOnMouseMove(const FGeometry& InGeometry,
 	auto CanvasPanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(this);
 	const FVector2D CurrentMousePositionOffset = CurrentMousePosition - OriginalRelativeClickPosition;
 	const FVector2D CurrentRelativeClickPosition = CurrentMousePosition - CanvasPanelSlot->GetPosition();
-
-
-	// GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("OriginalRelativeClickPosition: %f.2, %f.2"),
-	// 	                                 OriginalRelativeClickPosition.X, OriginalRelativeClickPosition.Y), true,
-	//                                  FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("OriginalClickPosition: %f.2, %f.2"), OriginalClickPosition.X,
-	// 	                                 OriginalClickPosition.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("OriginalWidgetPosition: %f.2, %f.2"), OriginalWidgetPosition.X,
-	// 	                                 OriginalWidgetPosition.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("OriginalWidgetSize: %f.2, %f.2"), OriginalWidgetSize.X,
-	// 	                                 OriginalWidgetSize.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("ClampedWidgetPosition: %f.2, %f.2"), ClampedWidgetPosition.X,
-	// 	                                 ClampedWidgetPosition.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::White,
-	//                                  FString::Printf(TEXT("MouseDelta: %f.2, %f.2"), MouseDelta.X, MouseDelta.Y), true,
-	//                                  FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(6, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("CurrentMousePosition: %f.2, %f.2"), CurrentMousePosition.X,
-	// 	                                 CurrentMousePosition.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(8, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("ScreenSpacePos: %f.2, %f.2"), MouseAbsoluteDesktopPosition.X,
-	// 	                                 MouseAbsoluteDesktopPosition.Y), true, FVector2D{2, 2});
-	// GEngine->AddOnScreenDebugMessage(9, 5.f, FColor::White,
-	//                                  FString::Printf(
-	// 	                                 TEXT("CurrentMousePositionOffset: %f.2, %f.2"), CurrentMousePositionOffset.X,
-	// 	                                 CurrentMousePositionOffset.Y), true, FVector2D{2, 2});
-
-
-	// return FReply::Handled();
 
 	if (bDragging)
 	{

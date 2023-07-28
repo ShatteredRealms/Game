@@ -19,6 +19,22 @@ USROSaveGame* USROSaveGame::CreateDefault()
 		return nullptr;
 	}
 
+	NewSaveGame->CreateDefault_Chat();
+	NewSaveGame->CreateDefault_CombatBarPositions();
+	NewSaveGame->CreateDefault_TargetingPosition();
+
+	return NewSaveGame;
+}
+
+void USROSaveGame::CreateDefault_CombatBarPositions()
+{
+	HealthBarPosition = FVector2d{12.0f, 12.0f};
+	ManaBarPosition = FVector2D{32.0f, 12.0f};
+	ExperienceBarPosition = FVector2D{52.0f, 12.0f};
+}
+
+void USROSaveGame::CreateDefault_Chat()
+{
 	FChatPanelData ChatPanel;
 	
 	FVector2f Position;
@@ -38,8 +54,12 @@ USROSaveGame* USROSaveGame::CreateDefault()
 	DefaultTab.bSelected = true;
 
 	ChatPanel.Tabs.Add(DefaultTab);
+	
+	AllChatPanelData.Add(ChatPanel);
+}
 
-	NewSaveGame->AllChatPanelData.Add(ChatPanel);
-
-	return NewSaveGame;
+void USROSaveGame::CreateDefault_TargetingPosition()
+{
+	// @TODO(wil): Calculate screen size and set in the middle
+	AttackTargetsPosition = FVector2D{500, 12};
 }

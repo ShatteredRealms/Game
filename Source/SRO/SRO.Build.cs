@@ -31,6 +31,7 @@ public class SRO : ModuleRules
 			"UMG",
 			"Messaging",
 			"MessagingCommon",
+			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
 			"AIModule",
@@ -45,6 +46,7 @@ public class SRO : ModuleRules
 			"TurboLinkGrpc",
 			"EnhancedInput",
 			"ALSReplicated",
+			"NavigationSystem",
 		});
 
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");

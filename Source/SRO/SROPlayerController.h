@@ -76,6 +76,15 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void UpdateFightingTargetUI();
+
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
+	
+	UFUNCTION()
+	void ControlledPawnTookDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION(BlueprintCallable)
+	void SetupUIForControlledPawn();
 private:
 	// HELPER FUNCTIONS
 	bool CheckNextAttackTarget(TArray<AActor*> Targets, const int Index);

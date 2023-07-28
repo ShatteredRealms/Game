@@ -55,7 +55,9 @@ bool USROBaseUI::SetupFromSave()
 		return false;
 	}
 
-	SetupChat(SaveGame->AllChatPanelData);
+	Setup_Chat(SaveGame->AllChatPanelData);
+	Setup_CombatBars(SaveGame);
+	Setup_Targeting(SaveGame);
 
 	return true;
 }
@@ -81,7 +83,7 @@ void USROBaseUI::NativeConstruct()
 	SetupFromSave();
 }
 
-void USROBaseUI::SetupChat(TArray<FChatPanelData> Data)
+void USROBaseUI::Setup_Chat(TArray<FChatPanelData> Data)
 {
 	// Delete old panels
 	for (auto ChatPanel : ChatPanels)
@@ -144,8 +146,39 @@ void USROBaseUI::SetupChat(TArray<FChatPanelData> Data)
 	}
 }
 
+void USROBaseUI::Setup_CombatBars(USROSaveGame* SaveGame)
+{
+	UCanvasPanelSlot* CanvasPanelSlot;
+	CanvasPanelSlot = Cast<UCanvasPanelSlot>(HealthBar->Slot);
+	if (CanvasPanelSlot)
+	{
+		CanvasPanelSlot->SetPosition(SaveGame->HealthBarPosition);
+	}
+	
+	CanvasPanelSlot = Cast<UCanvasPanelSlot>(ManaBar->Slot);
+	if (CanvasPanelSlot)
+	{
+		CanvasPanelSlot->SetPosition(SaveGame->ManaBarPosition);
+	}
+	
+	CanvasPanelSlot = Cast<UCanvasPanelSlot>(ExperienceBar->Slot);
+	if (CanvasPanelSlot)
+	{
+		CanvasPanelSlot->SetPosition(SaveGame->ExperienceBarPosition);
+	}
+}
+
 void USROBaseUI::OnChatTabSelected(UChatTabWidget* SelectedChatTab)
 {
 	PrevFocusedChatTab = SelectedChatTab;
 }
 
+void USROBaseUI::Setup_Targeting(USROSaveGame* SaveGame)
+{
+	UCanvasPanelSlot* CanvasPanelSlot;
+	CanvasPanelSlot = Cast<UCanvasPanelSlot>(AttackTargetsWidget->Slot);
+	if (CanvasPanelSlot)
+	{
+		CanvasPanelSlot->SetPosition(SaveGame->AttackTargetsPosition);
+	}
+}

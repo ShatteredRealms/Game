@@ -6,7 +6,7 @@
 #include "DraggableResizableBaseWindow.h"
 #include "Blueprint/UserWidget.h"
 #include "Chat/ChatTabWidget.h"
-#include "Chat/ChatWindow.h"
+#include "Combat/VerticalProgressWidget.h"
 #include "Components/CanvasPanel.h"
 #include "Save/ChatPanelData.h"
 #include "SRO/SROGameInstance.h"
@@ -14,6 +14,7 @@
 
 #include "SROBaseUI.generated.h"
 
+class USROSaveGame; 
 /**
  * 
  */
@@ -30,7 +31,9 @@ class SRO_API USROBaseUI : public UUserWidget
 	/** BP Chat panel class that implements the UI design */
 
 private:
-	void SetupChat(TArray<FChatPanelData> Data);
+	void Setup_Chat(TArray<FChatPanelData> Data);
+	void Setup_CombatBars(USROSaveGame* SaveGame);
+	void Setup_Targeting(USROSaveGame* SaveGame);
 
 	USROGameInstance* GameInstance;
 	ASROPlayerController* PlayerController;
@@ -56,6 +59,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
 	UAttackTargetsWidget* AttackTargetsWidget;
 	// END TARGETING
+
+	// START XP, MP, XP Bars
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
+	UVerticalProgressWidget* HealthBar;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
+	UVerticalProgressWidget* ManaBar;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
+	UVerticalProgressWidget* ExperienceBar;
+	// END XP, MP, XP Bars
 
 	// START WIDGET CLASSES
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
