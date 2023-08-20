@@ -1,8 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using UnrealBuildTool;
 
 public class SRO : ModuleRules
@@ -15,6 +12,11 @@ public class SRO : ModuleRules
 		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnableExceptions = true;
+		
+		PublicIncludePaths.AddRange(new []
+		{
+			"SRO"
+		});
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
@@ -31,9 +33,9 @@ public class SRO : ModuleRules
 			"UMG",
 			"Messaging",
 			"MessagingCommon",
-			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
+			"GameplayAbilities",
 			"AIModule",
 			"SlateCore",
 			"Slate",
@@ -47,6 +49,7 @@ public class SRO : ModuleRules
 			"EnhancedInput",
 			"ALSReplicated",
 			"NavigationSystem",
+			"Niagara",
 		});
 
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");

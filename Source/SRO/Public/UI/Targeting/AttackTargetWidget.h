@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/FightingTarget.h"
+#include "Gameplay/Character/FightingCharacter.h"
 #include "AttackTargetWidget.generated.h"
 
 /**
@@ -18,7 +18,7 @@ class SRO_API UAttackTargetWidget : public UUserWidget
 	GENERATED_BODY()
 
 	UPROPERTY()
-	AFightingTarget* Target;
+	AFightingCharacter* Target;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
@@ -28,10 +28,10 @@ public:
 	UProgressBar* HealthBar;
 	
 	UFUNCTION(BlueprintCallable)
-	void SetTarget(AFightingTarget* NewTarget);
+	void SetTarget(AFightingCharacter* NewTarget);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE AFightingTarget* GetTarget() { return Target; }
+	FORCEINLINE AFightingCharacter* GetTarget() { return Target; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void TargetUpdated();

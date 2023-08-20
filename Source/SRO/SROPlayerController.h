@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/FightingTarget.h"
 #include "Offline/SROOfflineController.h"
 #include "UI/SROHud.h"
 #include "SROPlayerController.generated.h"
@@ -20,7 +19,7 @@ class SRO_API ASROPlayerController : public ASROOfflineController
 private:
 	/** Current target */
 	UPROPERTY()
-	ATarget* CurrentTarget;
+	AActor* CurrentTarget;
 
 	UPROPERTY()
 	int AttackTargetIndex;
@@ -49,10 +48,10 @@ public:
 	void ClearTarget();
 	
 	UFUNCTION(BlueprintCallable, Category=Targeting)
-	bool SetTarget(ATarget* NewTarget);
+	bool SetTarget(AActor* NewTarget);
 
 	UFUNCTION(BlueprintCallable, Category=Targeting)
-	FORCEINLINE ATarget* GetTarget() const { return CurrentTarget; }
+	FORCEINLINE AActor* GetTarget() const { return CurrentTarget; }
 
 	/** Blueprint event to tell attack target updated */
 	UFUNCTION(BlueprintImplementableEvent)

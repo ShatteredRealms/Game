@@ -24,8 +24,8 @@ public:
 	UAttackTargetWidget* FightingTargetWidget;
 	
 	UFUNCTION(BlueprintCallable)
-	void SetAttackTarget(AFightingTarget* NewTarget);
+	void SetAttackTarget(AFightingCharacter* NewTarget);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetFightingTarget(AFightingTarget* NewTarget);
+	void SetFightingTarget(AFightingCharacter* NewTarget);
 };

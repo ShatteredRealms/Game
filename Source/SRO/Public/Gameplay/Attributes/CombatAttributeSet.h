@@ -19,6 +19,9 @@ class SRO_API UCombatAttributeSet : public UAttributeSet
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxHealth, Category="Combat")
+	FGameplayAttributeData Level;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxHealth, Category="Combat")
 	FGameplayAttributeData MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category="Combat")
@@ -30,7 +33,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Mana, Category="Combat")
 	FGameplayAttributeData Mana;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_AttackRating, Category="Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_AttackRating, Category="Combat|Attack")
 	FGameplayAttributeData AttackRating;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_ProjectileArmorRating, Category="Defense")
@@ -50,6 +53,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	UFUNCTION()
+	virtual void OnRep_Level(const FGameplayAttributeData& OldLevel);
+	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UCombatAttributeSet, Level);
+	GAMEPLAYATTRIBUTE_VALUE_GETTER(Level);
+	GAMEPLAYATTRIBUTE_VALUE_SETTER_WITHMIN(Level, 0);
+	GAMEPLAYATTRIBUTE_VALUE_INITTER(Level);
 
 	UFUNCTION()
 	virtual void OnRep_Health(const FGameplayAttributeData& OldHealth);

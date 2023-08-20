@@ -15,8 +15,8 @@ USROCharacterListEntry::USROCharacterListEntry(const class FObjectInitializer& O
 
 void USROCharacterListEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
-	BaseCharacter = Cast<USROBaseCharacter>(ListItemObject);
-	if (!BaseCharacter)
+	CharacterDetails= Cast<USROCharacterDetails>(ListItemObject);
+	if (!CharacterDetails)
 	{
 		UE_LOG(LogSRO, Error, TEXT("Unable to cast list item to base character"))
 	}

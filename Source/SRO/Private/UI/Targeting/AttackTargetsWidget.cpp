@@ -3,7 +3,7 @@
 
 #include "UI/Targeting/AttackTargetsWidget.h"
 
-void UAttackTargetsWidget::SetAttackTarget(AFightingTarget* NewTarget)
+void UAttackTargetsWidget::SetAttackTarget(AFightingCharacter* NewTarget)
 {
 	AttackTargetWidget->SetTarget(NewTarget);
 	if (AttackTargetWidget->GetTarget() == FightingTargetWidget->GetTarget())
@@ -12,7 +12,7 @@ void UAttackTargetsWidget::SetAttackTarget(AFightingTarget* NewTarget)
 	}
 }
 
-void UAttackTargetsWidget::SetFightingTarget(AFightingTarget* NewTarget)
+void UAttackTargetsWidget::SetFightingTarget(AFightingCharacter* NewTarget)
 {
 	FightingTargetWidget->SetTarget(NewTarget);
 }

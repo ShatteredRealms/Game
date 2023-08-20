@@ -2,10 +2,12 @@
 
 #include "SROGameMode.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemGlobals.h"
 #include "HttpModule.h"
 #include "JWTGenerator.h"
 #include "SRO.h"
-#include "SROCharacter.h"
+#include "Gameplay/Character/SROCharacter.h"
 #include "SROGameSession.h"
 #include "SROGameState.h"
 #include "SROPlayerController.h"
@@ -14,6 +16,7 @@
 #include "TurboLinkGrpcManager.h"
 #include "TurboLinkGrpcUtilities.h"
 #include "GameFramework/HUD.h"
+#include "Gameplay/Combat/Abilities/BasicAttack.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/TypeContainer.h"
 #include "SSroCharacter/CharacterService.h"
@@ -91,6 +94,19 @@ void ASROGameMode::OnEditCharacterResponseReceived(
 void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	TMap<int, FString> FoundIds;
+	for (const auto AbilityClass : AllAbilities)
+	{
+		USROGameplayAbility* Ability = AbilityClass.GetDefaultObject();
+		FString* Conflict = FoundIds.Find(Ability->GetAbilityId());
+		if (Conflict)
+		{
+			UE_LOG(LogSRO, Error, TEXT("Ability ID conflict found for ID %d: %s, and %s"), Conflict, *Ability->GetName())
+		}
+		
+		FoundIds.Add(Ability->GetAbilityId(), Ability->GetName());
+	}
 	
 	// Get the server Name
 #if UE_BUILD_DEVELOPMENT
@@ -103,6 +119,10 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 #endif
 
 	// Setup keycloak
+	if (!Keycloak)
+	{
+		Keycloak = NewObject<UKeycloak>();
+	}
 	Keycloak->OnKeycloakError().BindUObject(this, &ASROGameMode::OnKeycloakError);
 	Keycloak->OnRefreshAuthToken().BindUObject(this, &ASROGameMode::UpdateAuthTokens);
 	Keycloak->UpdateJWKs();
@@ -257,12 +277,6 @@ FString ASROGameMode::InitNewPlayer(APlayerController* NewPlayerController, cons
 			CharacterDetails->Location.Yaw,
 			CharacterDetails->Location.Roll);
 	}
-
-	auto Character = Cast<ASROCharacter>(NewPlayerController->GetCharacter());
-	if (Character)
-	{
-		return ErrorMessage; 
-	}
 	
 	return ErrorMessage;
 }
@@ -284,6 +298,14 @@ void ASROGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 
 	Character->SetBaseCharacter(*Details);
+	Character->GetAbilitySystemComponent()->AddSet<UCombatAttributeSet>();
+	Character->GetAbilitySystemComponent()->AddSet<UCombatAttributeSet>();
+
+	for (TSubclassOf<USROGameplayAbility>& Ability : AllAbilities)
+	{
+		Character->GetAbilitySystemComponent()->GiveAbility(
+			FGameplayAbilitySpec(Ability, 1, Ability.GetDefaultObject()->GetAbilityId(), Character));
+	}
 	
 	AcceptedConnections.Remove(NewPlayer->NetConnection->PlayerId);
 }
@@ -324,9 +346,11 @@ void ASROGameMode::Logout(AController* Exiting)
 	SyncCharacter(PC);
 }
 
-void ASROGameMode::OnKeycloakError(const FString& Error)
+void ASROGameMode::UpdateAuthTokens_Implementation(const FString& NewAuthToken, const FString& NewRefreshToken)
 {
-	UE_LOG(LogSRO, Warning, TEXT("keycloak: %s"), *Error);
+	UE_LOG(LogSRO, Display, TEXT("Updated auth and refresh tokens"))
+	AuthToken = NewAuthToken;
+	RefreshToken = NewRefreshToken;
 }
 
 void ASROGameMode::OnVerifyConnectResponseReceived(
@@ -353,6 +377,7 @@ void ASROGameMode::OnVerifyConnectResponseReceived(
 		}
 	}
 	
+	PendingConnections.Remove(Handle);
 	Super::PreLogin(PendingConnection->Options, PendingConnection->Address, PendingConnection->UniqueId, ErrorMessage);
 }
 
@@ -416,13 +441,6 @@ void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpRes
 	RefreshToken = JsonObject->GetStringField("refresh_token");
 }
 
-void ASROGameMode::UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken)
-{
-	UE_LOG(LogSRO, Display, TEXT("Updated auth and refresh tokens"))
-	AuthToken = NewAuthToken;
-	RefreshToken = NewRefreshToken;
-}
-
 void ASROGameMode::RequestUpdateTokens()
 {
 	if (!RefreshToken.IsEmpty())
@@ -430,4 +448,9 @@ void ASROGameMode::RequestUpdateTokens()
 		UE_LOG(LogSRO, Display, TEXT("Requesting new auth tokens"));
 		Keycloak->RefreshAuthToken(RefreshToken);
 	}
+}
+
+void ASROGameMode::OnKeycloakError_Implementation(const FString& Error)
+{
+	UE_LOG(LogSRO, Warning, TEXT("keycloak: %s"), *Error);
 }

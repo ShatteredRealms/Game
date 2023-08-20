@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "HttpModule.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/SROBaseCharacter.h"
 #include "Components/Button.h"
 #include "Components/ListView.h"
 #include "Components/TextBlock.h"
 #include "Components/Throbber.h"
+#include "Gameplay/Character/SROCharacterDetails.h"
 #include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionClient.h"
 #include "SROCharacterSelectorWidget.generated.h"
@@ -49,7 +49,7 @@ public:
 	UThrobber* PlayThrobber;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-	USROBaseCharacter* SelectedBaseCharacter;
+	USROCharacterDetails* SelectedCharacterDetaeils;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 	AActor* SelectedCharacterActor;

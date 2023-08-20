@@ -4,6 +4,54 @@
 #include "Engine/DataTable.h"
 #include "SkillData.generated.h"
 
+UENUM(BlueprintType)
+enum ESkill
+{
+	Strength,
+	Stamina,
+	Agility,
+	Perception,
+	Intelligence,
+	Insight,
+	
+	MartialArts,
+	OneHandMelee,
+	TwoHandMelee,
+	MultiMelee,		
+	MeleeInitiative,
+	QuickSlash,
+	Smash,
+	Flurry,
+	
+	Pistol,
+	Rifle,
+	Sniper,			
+	RangedInitiative,
+	QuickShot,
+	PrecisionShot,
+	Burst,
+	
+	Creation,
+	Metamorphosis,
+	Remedy,
+	Rejuvenation,
+	SpaceTime,
+	Enhancement,
+	MagicInitiative,
+	
+	Programming,
+	Construction,
+	Engineering,
+	LockPicking,
+	
+	Treatment,
+	FirstAid,
+	Constitution,
+	ManaPool,
+	
+	MovementSpeed,
+};
+
 USTRUCT(BlueprintType)
 struct FSkillData : public FTableRowBase
 {

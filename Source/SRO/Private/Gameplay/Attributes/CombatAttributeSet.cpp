@@ -10,25 +10,36 @@ void UCombatAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, Level, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, Mana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, AttackRating, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, ProjectileArmorRating, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, MeleeArmorRating, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, FireArmorRating, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, FrostArmorRating, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, Mana, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, MaxMana, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, AttackRating, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, ProjectileArmorRating, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, MeleeArmorRating, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, FireArmorRating, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCombatAttributeSet, FrostArmorRating, COND_OwnerOnly, REPNOTIFY_Always);
 }
 
 void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
-	{
-		SetHealth(GetHealth());
-	}
+		GA_SET_IF(Level,					1, 15)
+	GA_SET_ELSEIF(Health,					0, 1e6)
+	GA_SET_ELSEIF(MaxHealth,				0, 1e6)
+	GA_SET_ELSEIF(Mana,						0, 1e6)
+	GA_SET_ELSEIF(MaxMana,					0, 1e6)
+	GA_SET_ELSEIF(AttackRating,				-5000, 5000)
+	GA_SET_ELSEIF(ProjectileArmorRating,	-5000, 5000)
+	GA_SET_ELSEIF(MeleeArmorRating,			-5000, 5000)
+	GA_SET_ELSEIF(FireArmorRating,			-5000, 5000)
+	GA_SET_ELSEIF(FrostArmorRating,			-5000, 5000)
+}
+void UCombatAttributeSet::OnRep_Level(const FGameplayAttributeData& OldLevel)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UCombatAttributeSet, Level, OldLevel);
 }
 
 void UCombatAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)

@@ -2,53 +2,46 @@
 
 
 #include "UI/Targeting/TargetDetailsWidget.h"
+#include "Gameplay/Character/FightingCharacter.h"
 
-#include "GameFramework/FightingTarget.h"
-
-void UTargetDetailsWidget::Setup(ATarget* NewTarget)
+void UTargetDetailsWidget::Setup(AActor* NewTarget)
 {
+	SetVisibility(ESlateVisibility::HitTestInvisible);
+	
 	Target = NewTarget;
-	if (!Target)
-	{
-		return;
-	}
 
-	SetVisibility(ESlateVisibility::Visible);
-
-	UpdateTargetName();
-
-	if (AFightingTarget* FightingTarget = Cast<AFightingTarget>(Target))
+	if (AFightingCharacter* Character = Cast<AFightingCharacter>(Target))
 	{
 		HealthBar->SetVisibility(ESlateVisibility::Visible);
-		UpdateHealthBarSize();
-		UpdateHealthPercentage();
+		SetDisplayName(Character->GetDisplayName());
+		UpdateHealthBarSize(Character->GetMaxHealth());
+		UpdateHealthPercentage(Character->GetHealth(), Character->GetMaxHealth());
+		UpdateHealthBarSize(100);
+		UpdateHealthPercentage(100, 100);
+	}
+	else
+	{
+		HealthBar->SetVisibility(ESlateVisibility::Collapsed);
+		SetDisplayName(NewTarget->GetName());
 	}
 
 	// @TODO(wil): Set faction information if it's a player character
+	FactionNameText->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UTargetDetailsWidget::UpdateHealthBarSize()
+void UTargetDetailsWidget::SetDisplayName(FString NewDisplayName)
 {
-	if (AFightingTarget* FightingTarget = Cast<AFightingTarget>(Target))
-	{
-		HealthSizeBox->SetWidthOverride(200 + FMath::Log2(FightingTarget->GetMaxHealth()) * 10);
-	}
+	TargetNameText->SetText(FText::FromString(NewDisplayName));
 }
 
-void UTargetDetailsWidget::UpdateHealthPercentage()
+void UTargetDetailsWidget::UpdateHealthBarSize(float MaxHealth)
 {
-	if (AFightingTarget* FightingTarget = Cast<AFightingTarget>(Target))
-	{
-		HealthBar->SetPercent(FightingTarget->GetCurrentHealth() / FightingTarget->GetMaxHealth());
-	}
+	HealthSizeBox->SetWidthOverride(200 + FMath::Log2(MaxHealth) * 10);
 }
 
-void UTargetDetailsWidget::UpdateTargetName()
+void UTargetDetailsWidget::UpdateHealthPercentage(float CurrentHealth, float MaxHealth)
 {
-	if (Target)
-	{
-		TargetNameText->SetText(FText::FromString(Target->GetDisplayName()));
-	}
+	HealthBar->SetPercent(CurrentHealth / MaxHealth);
 }
 
 void UTargetDetailsWidget::SetTargeted_Implementation(bool bNewTargeted)
@@ -70,7 +63,7 @@ void UTargetDetailsWidget::SetTargeted_Implementation(bool bNewTargeted)
 	}
 }
 
-void UTargetDetailsWidget::SetFightingTarget_Implementation(bool bNewFightingTargeted)
+void UTargetDetailsWidget::SetAttacked_Implementation(bool bNewFightingTargeted)
 {
 	bFightingTargeted = bNewFightingTargeted;
 	if (bFightingTargeted)

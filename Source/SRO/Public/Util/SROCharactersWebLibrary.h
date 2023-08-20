@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/SROBaseCharacter.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "SROCharactersWebLibrary.generated.h"

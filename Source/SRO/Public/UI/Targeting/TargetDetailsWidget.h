@@ -8,7 +8,6 @@
 #include "Components/ProgressBar.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/Target.h"
 #include "TargetDetailsWidget.generated.h"
 
 /**
@@ -21,7 +20,7 @@ class SRO_API UTargetDetailsWidget : public UUserWidget
 	
 protected:
 	UPROPERTY()
-	ATarget* Target;
+	AActor* Target;
 
 	UPROPERTY()
 	bool bTargeted;
@@ -29,7 +28,7 @@ protected:
 	UPROPERTY()
 	bool bFightingTargeted;
 	
-public:
+public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(BindWidget))
 	UTextBlock* TargetNameText;
 	
@@ -46,23 +45,26 @@ public:
 	UBorder* Border;
 
 	UFUNCTION(BlueprintCallable)
-	void Setup(ATarget* NewTarget);
+	void Setup(AActor* NewTarget);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateHealthBarSize();
+	void SetDisplayName(FString NewDisplayName);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateHealthPercentage();
+	void UpdateHealthBarSize(float MaxHealth);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateTargetName();
-
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE ATarget* GetTarget() { return Target; }
+	void UpdateHealthPercentage(float CurrentHealth, float MaxHealth);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetTargeted(bool bNewTargeted);
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsTargeted() { return bTargeted; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetFightingTarget(bool bNewFightingTargeted);
+	void SetAttacked(bool bNewFightingTargeted);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsAttacked() { return bFightingTargeted; }
 };

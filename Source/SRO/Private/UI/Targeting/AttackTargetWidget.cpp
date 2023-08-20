@@ -3,7 +3,7 @@
 
 #include "UI/Targeting/AttackTargetWidget.h"
 
-void UAttackTargetWidget::SetTarget(AFightingTarget* NewTarget)
+void UAttackTargetWidget::SetTarget(AFightingCharacter* NewTarget)
 {
 	Target = NewTarget;
 	

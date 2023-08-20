@@ -6,10 +6,10 @@
 #include "TurboLinkGrpcConfig.h"
 #include "TurboLinkGrpcManager.h"
 #include "TurboLinkGrpcUtilities.h"
+#include "Gameplay/Character/SROCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Offline/SROOfflineController.h"
 #include "SRO/SRO.h"
-#include "SRO/SROCharacter.h"
 #include "SRO/SROGameInstance.h"
 #include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionService.h"
@@ -140,7 +140,7 @@ void USROCharacterSelectorWidget::Play()
 		return;
 	}
 
-	USROBaseCharacter* Character = CharacterList->GetSelectedItem<USROBaseCharacter>();
+	USROCharacterDetails* Character = CharacterList->GetSelectedItem<USROCharacterDetails>();
 	if (!Character)
 	{
 		UE_LOG(LogSRO, Error, TEXT("No character selected"))
@@ -149,7 +149,7 @@ void USROCharacterSelectorWidget::Play()
 
 	const auto Handle = ConnectionServiceClient->InitConnectGameServer();
 	FGrpcSroCharacterCharacterTarget Request;
-	Request.Type.Id = Character->BaseData.Id;
+	Request.Type.Id = Character->GRPCData.Id;
 	Request.Type.TypeCase = EGrpcSroCharacterCharacterTargetType::Id;
 	ConnectionServiceClient->ConnectGameServer(Handle, Request, GI->AuthToken);
 	
@@ -179,7 +179,7 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(
 		return;
 	}
 
-	USROBaseCharacter* Character = CharacterList->GetSelectedItem<USROBaseCharacter>();
+	USROCharacterDetails* Character = CharacterList->GetSelectedItem<USROCharacterDetails>();
 	if (!Character)
 	{
 		UE_LOG(LogSRO, Error, TEXT("No character selected"))
@@ -196,8 +196,8 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(
 				FStringFormatArg(Response.ConnectionId),
 			}));
 
-	GI->SelectedCharacterName = Character->BaseData.Name;
-	GI->SelectedCharacterId = Character->BaseData.Id;
+	GI->SelectedCharacterName = Character->GRPCData.Name;
+	GI->SelectedCharacterId = Character->GRPCData.Id;
 	GI->ChatManager->OnConnectedAllChannels().BindWeakLambda(this, [PC, URL]
 	{
 		PC->ClientTravel(URL, TRAVEL_Absolute);
@@ -213,8 +213,8 @@ void USROCharacterSelectorWidget::OnGetCharactersReceived(
 {
 	for (auto CharacterData : Response.Characters)
 	{
-		USROBaseCharacter* Character = NewObject<USROBaseCharacter>();
-		Character->BaseData = CharacterData;
+		USROCharacterDetails* Character = NewObject<USROCharacterDetails>();
+		Character->GRPCData = CharacterData;
 		CharacterList->AddItem(Character);
 	}
 }

@@ -3,7 +3,7 @@
 
 #include "SROPlayerController.h"
 
-#include "SROCharacter.h"
+#include "Gameplay/Character/SROCharacter.h"
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -23,7 +23,7 @@ void ASROPlayerController::BeginPlay()
 
 	FInputModeGameAndUI mode = FInputModeGameAndUI();
 	mode.SetHideCursorDuringCapture(true);
-	mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture);
+	mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 	SetShowMouseCursor(true);
 	SetInputMode(mode);
 }
@@ -64,7 +64,6 @@ bool ASROPlayerController::InputKey(const FInputKeyParams& Params)
 		if (SROCharacter->GetFightingTarget())
 		{
 			SROCharacter->StopFighting();
-			UpdateTargetingUI();
 			return true;
 		}
 		
@@ -81,11 +80,17 @@ bool ASROPlayerController::InputKey(const FInputKeyParams& Params)
 		FHitResult Result;
 		GetHitResultUnderCursor(ECC_WorldStatic, false, Result);
 		AActor* Actor = Result.GetActor();
-		if (ATarget* Target = Cast<ATarget>(Actor))
+		if (Actor->GetClass()->ImplementsInterface(UTargetable::StaticClass()))
 		{
-			SetTarget(Target);
+			SetTarget(Actor);
 			return true;
 		}
+	}
+
+	if (Params.Key == EKeys::T
+		&& Params.Event == IE_Pressed)
+	{
+		SROCharacter->GetTargetingComponent()->Setup(SROCharacter);
 	}
 	
 	return Super::InputKey(Params);
@@ -100,7 +105,8 @@ void ASROPlayerController::CancelAction()
 	
 	if (CurrentTarget)
 	{
-		CurrentTarget->SetTargeted(false);
+		ITargetable* TargetableActor = Cast<ITargetable>(CurrentTarget);
+		TargetableActor->GetTargetingComponent()->SetTargeted(false);
 		return;
 	}
 
@@ -116,7 +122,7 @@ void ASROPlayerController::NextAttackTarget()
 	
 	// @TODO(wil): Find way to cache this array and keep up to date
 	TArray<AActor*> Targets;
-	UGameplayStatics::GetAllActorsOfClass(this, AFightingTarget::StaticClass(), Targets);
+	UGameplayStatics::GetAllActorsOfClass(this, AFightingCharacter::StaticClass(), Targets);
 
 	// Only target is self
 	if (Targets.Num() == 1)
@@ -129,11 +135,11 @@ void ASROPlayerController::NextAttackTarget()
 	{
 		if (Targets[0] != GetCharacter())
 		{
-			SetTarget(Cast<ATarget>(Targets[0]));
+			SetTarget(Targets[0]);
 		}
 		else
 		{
-			SetTarget(Cast<ATarget>(Targets[1]));
+			SetTarget(Targets[1]);
 		}
 		
 		return;
@@ -182,7 +188,7 @@ void ASROPlayerController::NextAttackTarget()
 
 bool ASROPlayerController::CheckNextAttackTarget(TArray<AActor*> Targets, const int Index)
 {
-	AFightingTarget* Target = Cast<AFightingTarget>(Targets[Index]);
+	AFightingCharacter* Target = Cast<AFightingCharacter>(Targets[Index]);
 	
 	if (!Target
 		|| Target == GetCharacter()
@@ -218,10 +224,7 @@ void ASROPlayerController::UpdateTargetingUI()
 		return;
 	}
 	
-	if (CurrentTarget->GetClass()->IsChildOf(AFightingTarget::StaticClass()))
-	{
-		UpdateAttackTargetUI();
-	}
+	UpdateAttackTargetUI();
 }
 
 void ASROPlayerController::UpdateAttackTargetUI()
@@ -231,7 +234,7 @@ void ASROPlayerController::UpdateAttackTargetUI()
 		return;
 	}
 	
-	const auto CastedCurrentTarget = Cast<AFightingTarget>(CurrentTarget);
+	const auto CastedCurrentTarget = Cast<AFightingCharacter>(CurrentTarget);
 	if (!CastedCurrentTarget)
 	{
 		return;
@@ -292,12 +295,12 @@ void ASROPlayerController::ControlledPawnTookDamage(AActor* DamagedActor, float 
 		return;
 	}
 	
-	AFightingTarget* FightingTarget = Cast<AFightingTarget>(DamagedActor);
+	AFightingCharacter* FightingTarget = Cast<AFightingCharacter>(DamagedActor);
 	if (!FightingTarget)
 	{
 		return;
 	}
-	SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetCurrentHealth() / FightingTarget->GetMaxHealth());
+	SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetHealth() / FightingTarget->GetMaxHealth());
 }
 
 void ASROPlayerController::SetupUIForControlledPawn()
@@ -315,14 +318,16 @@ void ASROPlayerController::SetupUIForControlledPawn()
 	
 	GetPawn()->OnTakeAnyDamage.AddDynamic(this, &ASROPlayerController::ControlledPawnTookDamage);
 	
-	AFightingTarget* FightingTarget = Cast<AFightingTarget>(GetPawn());
+	AFightingCharacter* FightingTarget = Cast<AFightingCharacter>(GetPawn());
 	if (FightingTarget)
 	{
-		SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetCurrentHealth() / FightingTarget->GetMaxHealth());
+		SROHUD->BaseUI->HealthBar->SetFillPercent(FightingTarget->GetHealth() / FightingTarget->GetMaxHealth());
 	}
+
+	
 }
 
-bool ASROPlayerController::SetTarget(ATarget* NewTarget)
+bool ASROPlayerController::SetTarget(AActor* NewTarget)
 {
 	if (NewTarget == CurrentTarget
 		|| (!IsLocalController() && GetLocalRole() != ROLE_Authority))
@@ -332,22 +337,34 @@ bool ASROPlayerController::SetTarget(ATarget* NewTarget)
 	
 	if (CurrentTarget)
 	{
-		CurrentTarget->SetTargeted(false);
+		if (ITargetable* CastedTarget = Cast<ITargetable>(CurrentTarget))
+		{
+			if (CastedTarget->GetTargetingComponent())
+			{
+				CastedTarget->GetTargetingComponent()->SetTargeted(false);
+			}
+		}
 	}
 
 	CurrentTarget = NewTarget;
 	if (CurrentTarget)
 	{
-		CurrentTarget->SetTargeted(true);
+		if (ITargetable* CastedTarget = Cast<ITargetable>(CurrentTarget))
+		{
+			if (CastedTarget->GetTargetingComponent())
+			{
+				CastedTarget->GetTargetingComponent()->SetTargeted(true);
+			}
+		}
 	}
 
-	if ((CurrentTarget && CurrentTarget->GetClass()->IsChildOf(AFightingTarget::StaticClass()))
+	if ((CurrentTarget && !CurrentTarget->GetClass()->IsChildOf(AFightingCharacter::StaticClass()))
 		|| !CurrentTarget)
 	{
 		AttackTargetIndex = -1;
 	}
 
-	UpdateTargetingUI();
+	UpdateAttackTargetUI();
 	CurrentTargetUpdated();
 	return true;
 }
@@ -365,7 +382,7 @@ void ASROPlayerController::StartAttack()
 		return;
 	}
 
-	const auto CastedCurrentTarget = Cast<AFightingTarget>(CurrentTarget);
+	const auto CastedCurrentTarget = Cast<AFightingCharacter>(CurrentTarget);
 	if (!CastedCurrentTarget)
 	{
 		// @TODO(wil): Notify can't fight the target
@@ -387,7 +404,8 @@ void ASROPlayerController::StartAttack()
 	{
 		SROCharacter->StartFighting(CastedCurrentTarget);
 	}
-	
+
+	UpdateTargetingUI();
 	UpdateFightingTargetUI();
 	UpdateAttackTargetUI();
 }
@@ -412,7 +430,10 @@ void ASROPlayerController::EndAttack()
 
 void ASROPlayerController::ClearTarget()
 {
-	CurrentTarget->SetTargeted(false);
+	if (ITargetable* CastedTarget = Cast<ITargetable>(CurrentTarget))
+	{
+		CastedTarget->GetTargetingComponent()->SetTargeted(false);
+	}
 	CurrentTarget = nullptr;
 	AttackTargetIndex = -1;
 	UpdateTargetingUI();

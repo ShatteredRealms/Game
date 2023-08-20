@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Blueprint/IUserObjectListEntry.h"
 #include "Blueprint/UserWidget.h"
-#include "Character/SROBaseCharacter.h"
 #include "Components/Image.h"
+#include "Gameplay/Character/SROCharacterDetails.h"
 #include "SROCharacterListEntry.generated.h"
 
 /**
@@ -21,7 +21,7 @@ public:
 	USROCharacterListEntry(const class FObjectInitializer& ObjectInitializer);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USROBaseCharacter* BaseCharacter;
+	USROCharacterDetails* CharacterDetails;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login", meta = (BindWidget))
 	UImage* Highlight;

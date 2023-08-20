@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AgonesComponent.h"
-#include "JWTVerifier.h"
-#include "SROCharacter.h"
 #include "SROPlayerController.h"
 #include "Auth/Keycloak/Keycloak.h"
 #include "GameFramework/GameModeBase.h"
+#include "Gameplay/Combat/Abilities/SROGameplayAbility.h"
 #include "SSroCharacter//CharacterMessage.h"
 #include "SSroCharacter/CharacterClient.h"
 #include "SSroGamebackend/ConnectionClient.h"
@@ -41,6 +40,9 @@ protected:
 	UConnectionServiceClient* ConnectionServiceClient;
 
 	UCharacterServiceClient* CharacterServiceClient;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSet<TSubclassOf<USROGameplayAbility>> AllAbilities;
 
 private:
 	UPROPERTY()
@@ -88,11 +90,13 @@ public:
 	virtual void Logout(AController* Exiting) override;
 	
 	void OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-	void UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken);
 	void RequestUpdateTokens();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void OnKeycloakError(const FString& Error);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void UpdateAuthTokens(const FString& NewAuthToken, const FString& NewRefreshToken);
 	
 	UFUNCTION()
 	void OnVerifyConnectResponseReceived(FGrpcContextHandle Handle, const FGrpcResult& GrpcResult, const FGrpcSroCharacterCharacterDetails& Response);
@@ -102,6 +106,9 @@ public:
 
 	UFUNCTION()
 	void SyncCharacter(ASROPlayerController* PC);
+
+	UFUNCTION(BlueprintCallable, Category="Ability")
+	FORCEINLINE TSet<TSubclassOf<USROGameplayAbility>> GetAllGameplayAbilities() const { return AllAbilities; }
 };
 
 

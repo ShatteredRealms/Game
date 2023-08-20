@@ -20,10 +20,7 @@ void AALSBaseCharacter::BeginPlay()
 
 	if (GetLocalRole() == ROLE_SimulatedProxy)
 	{
-		if (GetMesh() && GetMesh()->GetAnimInstance())
-		{
-			GetMesh()->GetAnimInstance()->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
-		}
+		GetMesh()->GetAnimInstance()->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
 	}
 
 	SetReplicateMovement(true);
