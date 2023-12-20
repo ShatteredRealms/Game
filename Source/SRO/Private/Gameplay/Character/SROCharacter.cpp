@@ -223,14 +223,14 @@ void ASROCharacter::NewAttackTarget(const FInputActionValue& Value)
 void ASROCharacter::StartFighting(AFightingCharacter* Target)
 {
 	Super::StartFighting(Target);
-	if(IsLocallyControlled())
-	{
-		ASROPlayerController* PC = GetController<ASROPlayerController>();
-		if (PC)
-		{
-			PC->UpdateFightingTargetUI();
-		}
-	}
+	// if(IsLocallyControlled())
+	// {
+	// 	ASROPlayerController* PC = GetController<ASROPlayerController>();
+	// 	if (PC)
+	// 	{
+	// 		PC->UpdateFightingTargetUI();
+	// 	}
+	// }
 }
 
 void ASROCharacter::StopFighting()
@@ -274,11 +274,8 @@ void ASROCharacter::OnRep_CharacterDetails()
 
 void ASROCharacter::OnCharacterDetailsUpdated_Implementation()
 {
-	if (IsLocallyControlled())
-	{
-		DisplayName = CharacterDetails.Name;
-		GetTargetingComponent()->Setup(this);
-	}
+	DisplayName = CharacterDetails.Name;
+	GetTargetingComponent()->Setup(this);
 }
 
 FGrpcSroCharacterCharacterDetails& ASROCharacter::GetCharacterDetails()

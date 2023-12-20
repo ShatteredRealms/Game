@@ -1,6 +1,7 @@
 ﻿#include "Gameplay/Character/FightingCharacter.h"
 
 #include "GameplayTagsManager.h"
+#include "SROPlayerController.h"
 #include "Gameplay/Attributes/CombatAttributeSet.h"
 #include "Gameplay/Combat/Abilities/BasicAttack.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -14,7 +15,7 @@ AFightingCharacter::AFightingCharacter(const FObjectInitializer& ObjectInitializ
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	CombatAttributes = CreateDefaultSubobject<UCombatAttributeSet>(TEXT("CombatAttributes"));
-	SkillAttributes = CreateDefaultSubobject<USkillAttributeSet>(TEXT("SKillAttributes"));
+	SkillAttributes = CreateDefaultSubobject<USkillAttributeSet>(TEXT("SkillAttributes"));
 }
 
 UAbilitySystemComponent* AFightingCharacter::GetAbilitySystemComponent() const
@@ -50,8 +51,33 @@ void AFightingCharacter::StopFighting()
 	{
 		return;
 	}
+
+	if (!IsAttacking())
+	{
+		return;
+	}
 	
 	HandleStopFighting();
+}
+
+bool AFightingCharacter::HandleStopFighting_Validate()
+{
+	if (!IsAttacking())
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+bool AFightingCharacter::HandleStartFighting_Validate(AFightingCharacter* Target)
+{
+	if (Target == this)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void AFightingCharacter::HandleStartFighting_Implementation(AFightingCharacter* Target)
@@ -110,6 +136,9 @@ void AFightingCharacter::OnRep_FightingTarget(AFightingCharacter* OldFightingTar
 		{
 			FightingTarget->GetTargetingComponent()->SetAttacked(true);
 		}
+
+		ASROPlayerController* PC = Cast<ASROPlayerController>(GetController());
+		PC->UpdateTargetingUI();
 	}
 	
 	OnFightingTargetUpdated();

@@ -5,7 +5,7 @@
 #include "SROCharacterDetails.generated.h"
 
 /**
- * 
+ * SRO Character Details received from a gRPC call
  */
 UCLASS(Blueprintable)
 class SRO_API USROCharacterDetails : public UObject

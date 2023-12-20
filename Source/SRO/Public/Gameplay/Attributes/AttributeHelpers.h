@@ -2,6 +2,7 @@
 
 #pragma once
 
+// Creates setter for property name and has a check for the min value
 #define GAMEPLAYATTRIBUTE_VALUE_SETTER_WITHMIN(PropertyName, MinValue) \
 	FORCEINLINE void Set##PropertyName(float NewVal) \
 	{ \
@@ -13,6 +14,7 @@
 		}; \
 	}
 
+// Creates property getter, setter, initter and replcation for given class and name
 #define GAMEPLAYATTRIBUTE_HELPERS(ClassName, PropertyName) \
 	UFUNCTION() \
 	FORCEINLINE void OnRep_##PropertyName(const FGameplayAttributeData& Old##PropertyName##) \
@@ -24,7 +26,7 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 	
-
+// Creates a property and all helpers
 #define GAMEPLAYATTRIBUTE_ALLDEFAULT(ClassName, PropertyName, CategoryString) \
 	protected: \
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_##PropertyName##, Category=CategoryString) \

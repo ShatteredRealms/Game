@@ -7,6 +7,9 @@
 #include "Gameplay/Targets/Targetable.h"
 #include "BaseCharacter.generated.h"
 
+/**
+ * Base SRO character that can be targeted.
+ */
 UCLASS(Blueprintable, BlueprintType)
 class SRO_API ABaseCharacter : public ACharacter, public ITargetable
 {

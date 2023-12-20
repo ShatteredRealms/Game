@@ -376,21 +376,21 @@ void ASROPlayerController::StartAttack()
 		return;
 	}
 	
-	if (!CurrentTarget)
+	if (CurrentTarget == nullptr)
 	{
 		// @TODO(wil): Notify no target
 		return;
 	}
 
 	const auto CastedCurrentTarget = Cast<AFightingCharacter>(CurrentTarget);
-	if (!CastedCurrentTarget)
+	if (CastedCurrentTarget == nullptr)
 	{
 		// @TODO(wil): Notify can't fight the target
 		return;
 	}
 	
 	ASROCharacter* SROCharacter = Cast<ASROCharacter>(GetCharacter());
-	if (!SROCharacter)
+	if (SROCharacter == nullptr)
 	{
 		// @TODO(wil): Notify
 		return;
@@ -404,10 +404,6 @@ void ASROPlayerController::StartAttack()
 	{
 		SROCharacter->StartFighting(CastedCurrentTarget);
 	}
-
-	UpdateTargetingUI();
-	UpdateFightingTargetUI();
-	UpdateAttackTargetUI();
 }
 
 void ASROPlayerController::EndAttack()

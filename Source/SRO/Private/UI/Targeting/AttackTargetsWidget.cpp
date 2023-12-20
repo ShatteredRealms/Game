@@ -10,6 +10,10 @@ void UAttackTargetsWidget::SetAttackTarget(AFightingCharacter* NewTarget)
 	{
 		AttackTargetWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	else
+	{
+		AttackTargetWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 void UAttackTargetsWidget::SetFightingTarget(AFightingCharacter* NewTarget)

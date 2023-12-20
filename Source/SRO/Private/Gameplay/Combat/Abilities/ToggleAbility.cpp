@@ -13,9 +13,6 @@ void UToggleAbility::ActivateAbility(
 		|| bIsActive)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-		bIsActive = false;
 		return;
 	}
-	
-	
 }

@@ -11,12 +11,23 @@
 #include "SSroCharacter/CharacterMessage.h"
 #include "SROCharacter.generated.h"
 
+/**
+ * A SRO player character
+ */
 UCLASS(config=Game)
 class SRO_API ASROCharacter : public AFightingCharacter
 {
 	GENERATED_BODY()
 
 protected:
+	/** Inventory component for the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta = (AllowPrivateAccess = "true"))
+	class USROInventoryComponent* InventoryComponent;
+	
+	/** Inventory component for the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta = (AllowPrivateAccess = "true"))
+	class USROEquipmentComponent* EquipmentComponent;
+	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -106,16 +117,26 @@ public:
 	/** Get the base character details */
 	UFUNCTION(BlueprintCallable)
 	FGrpcSroCharacterCharacterDetails& GetCharacterDetails();
-	
+
+	/** Setup replicated properties */
 	virtual void GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const override;
 
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 
+	/** Called when character details are updated */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnCharacterDetailsUpdated();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void ResetFaceFightingTargetTimer();
+
+	/** Gets the inventory component for the character */
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE USROInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+
+	/** Gets the equipment component for the character */
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE USROEquipmentComponent* GetEquipmentComponent() const { return EquipmentComponent; }
 	
 protected:
 	/** Called for movement input */
@@ -153,10 +174,14 @@ protected:
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	/** Additionally updates the UI */
 	virtual void StartFighting(AFightingCharacter* Target) override;
+	
+	/** Additionally updates the UI */
 	virtual void StopFighting() override;
 };
 

@@ -7,7 +7,7 @@
 #include "BasicAttack.generated.h"
 
 /**
- * 
+ * Basic attacked used for all characters
  */
 UCLASS()
 class SRO_API UBasicAttack : public USROGameplayAbility

@@ -9,6 +9,9 @@
 #include "Keycloak.generated.h"
 
 
+/**
+ * SRO API endpoints
+ */
 UENUM(BlueprintType)
 enum EEndpoint
 {
@@ -22,6 +25,9 @@ enum EEndpoint
 	TokenRevocation,
 };
 
+/**
+ * JWT key structure used for SRO auth
+ */
 USTRUCT(BlueprintType)
 struct FJWTKey
 {
@@ -69,6 +75,9 @@ struct FJWTKey
 	}
 };
 
+/**
+ * JWK used for JWT auth. Essentially a list of JWT keys.
+ */
 USTRUCT(BlueprintType)
 struct FJWK
 {
@@ -101,17 +110,30 @@ class SRO_API UKeycloak : public UObject
 	GENERATED_BODY()
 
 protected:
+	/** All valid JWT keys */
 	TMap<FString, FJWTKey> JWTKeys;
-	
+
+	/** Called when an error occurs within keycloak */
 	FKeycloakAdapterErrorDelegate ErrorDelegate;
+
+	/** Called when JWK is refreshed */
 	FKeycloakAdapterFinishedDelegate JWKRefreshedDelegate;
+
+	/** Called with auth token is refreshed */
 	FKeycloakAdapterRefreshAuthTokenDelegate RefreshAuthTokenDelegate;
 	
 public:
-	
+
+	/**
+	 * Gets the fully qualified API endpoint given the endpoint enum
+	 * @return fully qualified API endpoint
+	 */
 	UFUNCTION(BlueprintCallable)
 	FString GetEndpointUrl(EEndpoint Endpoint) const;
 
+	/**
+	 * Request to get latest JWKs
+	 */
 	void UpdateJWKs();
 
 	/**
@@ -127,17 +149,22 @@ public:
 	 */
 	void RefreshAuthToken(FString& RefreshToken) const;
 
+	/** Requests to login using the given username and password given an HTTP request. */
 	void Login(const FString& Username, const FString& Password, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request) const;
 
+	/** Request to login as an OAuth client given an id and secret given an HTTP request. */
 	void ClientLogin(const FString& Id, const FString Secret, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
 
-
+	/** Gets the JWK refresh delegate */
 	FKeycloakAdapterFinishedDelegate& OnJWKRefreshed() { return JWKRefreshedDelegate; }
 
+	/** Gets the keycloak error delegate */
 	FKeycloakAdapterErrorDelegate& OnKeycloakError() { return ErrorDelegate; }
-
+	
+	/** Gets the refresh auth token delegate */
 	FKeycloakAdapterRefreshAuthTokenDelegate& OnRefreshAuthToken() { return RefreshAuthTokenDelegate; }
 
 private:
+	/** Called when UpdateJWKs response is received */
 	void OnCompletedJWKRequest(FHttpRequestPtr Request, FHttpResponsePtr Response, const bool bSucceeded);
 };

@@ -3,4 +3,5 @@
 #pragma once
 #include "GameplayTagContainer.h"
 
+/** Character is dead */
 static const FGameplayTag DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));

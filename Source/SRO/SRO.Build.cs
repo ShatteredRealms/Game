@@ -51,6 +51,12 @@ public class SRO : ModuleRules
 			"NavigationSystem",
 			"Niagara",
 		});
+		
+		PrivateDependencyModuleNames.AddRange(new []
+		{
+			"GameplayMessageRuntime",
+			"NetCore",
+		});
 
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "zlib");

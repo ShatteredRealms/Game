@@ -74,6 +74,11 @@ void USROChatManager::ConnectAllChannels()
 
 bool USROChatManager::ConnectToChannel(UChatChannel* ChatChannel, FString AuthToken)
 {
+	if (!GameInstance)
+	{
+		return false;
+	}
+	
 	if (GetChannel(ChatChannel->Struct.Id)) return false;
 	ConnectedChannels.Add(ChatChannel);
 

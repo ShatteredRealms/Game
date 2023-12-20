@@ -100,7 +100,6 @@ void UKeycloak::UpdateJWKs()
 	{
 		UE_LOG(LogSRO, Warning, TEXT("Unable to process keycloak request"))
 	}
-	
 }
 
 FString UKeycloak::ValidateToken(FString& Token) const

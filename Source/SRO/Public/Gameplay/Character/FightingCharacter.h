@@ -21,6 +21,9 @@
 		return 0.f; \
 	};
 
+/**
+ * Base SRO character that cant attack and be attacked. It has combat and skill attribute sets.
+ */
 UCLASS(Blueprintable, BlueprintType)
 class SRO_API AFightingCharacter : public ABaseCharacter, public IAbilitySystemInterface
 {
@@ -38,47 +41,65 @@ protected:
 	UFUNCTION()
 	void OnRep_FightingTarget(AFightingCharacter* OldFightingTarget);
 
+	/** Skill attributes for the character */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skills")
 	TWeakObjectPtr<USkillAttributeSet> SkillAttributes;
 
+	/** Combat attributes for the character */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Combat")
 	TWeakObjectPtr<UCombatAttributeSet> CombatAttributes;
 	
 public:
+	/** Setup ability system, skill attributes and combat attributes. */
 	AFightingCharacter(const FObjectInitializer& ObjectInitializer);
-	
+
+	/** Gets the ability system component for this character */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	/** Setup replicated properties */
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	/** Manages damage taken */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	
+
+	/** Whether the character is attacking or not */
 	UFUNCTION(BlueprintCallable, Category = Combat)
 	FORCEINLINE bool IsAttacking() const { return FightingTarget != nullptr; }
-	
+
+	/** Attempts to start attacking the target */
 	UFUNCTION(BlueprintCallable, Category = Combat)
 	virtual void StartFighting(AFightingCharacter* Target);
 
+	/** Attempts to stop fighting */
 	UFUNCTION(BlueprintCallable, Category = Combat)
 	virtual void StopFighting();
 
-	UFUNCTION(Server, Reliable)
-	void HandleStartFighting(AFightingCharacter* Character);
+	/** Server: Start fighting the given target */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void HandleStartFighting(AFightingCharacter* Target);
 
-	UFUNCTION(Server, Reliable)
+	/** Server: Stop fighting the current target */
+	UFUNCTION(Server, Reliable, WithValidation)
 	void HandleStopFighting();
 
+	/** Gets the current fighting target */
 	UFUNCTION(BlueprintCallable, Category = Combat)
 	FORCEINLINE AFightingCharacter* GetFightingTarget() const { return FightingTarget; }
 
 	UFUNCTION(BlueprintNativeEvent, Category=Targeting)
 	void OnFightingTargetUpdated();
 
+	/** Gets the rotation necessary to look at the fighting target */
 	UFUNCTION(BlueprintCallable, Category=Targeting)
 	FRotator GetFightingTargetRotation() const;
 
+	/** Gets the skill attribute set for the character */
 	FORCEINLINE TWeakObjectPtr<USkillAttributeSet> GetSkillAttributeSet() const { return SkillAttributes; }
+
+	/** Gets the combat attribute set for the character */
 	FORCEINLINE TWeakObjectPtr<UCombatAttributeSet> GetCombatAttributeSet() const { return CombatAttributes; }
+	
+	// START skill and combat attribute helpers
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(CombatAttributes, Level, Combat)
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(CombatAttributes, Health, Combat)
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(CombatAttributes, MaxHealth, Combat)
@@ -126,5 +147,6 @@ public:
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(SkillAttributes, Constitution, Defense)
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(SkillAttributes, ManaPool, Defense)
 	GAMEPLAYATTRIBUTE_ACTOR_GETTER(SkillAttributes, MovementSpeed, Adventuring)
+	// END skill and combat attribute helpers
 };
 

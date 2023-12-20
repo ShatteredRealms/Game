@@ -10,7 +10,7 @@
 #include "CombatAttributeSet.generated.h"
 
 /**
- * 
+ *  SRO combat attribute set used for all player and non-player characters that can attack or be attacked.
  */
 UCLASS()
 class SRO_API UCombatAttributeSet : public UAttributeSet

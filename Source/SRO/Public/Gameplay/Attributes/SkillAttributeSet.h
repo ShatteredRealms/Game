@@ -10,7 +10,7 @@
 #include "SkillAttributeSet.generated.h"
 
 /**
- * 
+ * SRO skill attribute set for all player and non-player characters
  */
 UCLASS()
 class SRO_API USkillAttributeSet : public UAttributeSet

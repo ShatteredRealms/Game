@@ -7,7 +7,7 @@
 #include "ToggleAbility.generated.h"
 
 /**
- * 
+ * Ability that is automatically ended if triggered while currently active.
  */
 UCLASS()
 class SRO_API UToggleAbility : public USROGameplayAbility

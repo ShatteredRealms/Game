@@ -4,13 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "Gameplay/Attributes/SkillAttributeSet.h"
 #include "SROGameplayAbility.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class SRO_API USROGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()

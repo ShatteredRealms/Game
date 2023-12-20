@@ -47,7 +47,6 @@ void ANPCSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
 	// Spawn maximum NPCs
 	for (int i = 0; i < MaximumCount; i++)
 	{
@@ -63,8 +62,13 @@ void ANPCSpawner::OnSpawnTimerEnd()
 	}
 }
 
-ANPC* ANPCSpawner::SpawnActor(bool ShouldSpawnMore)
+ANPC* ANPCSpawner::SpawnActor(bool ContinueSpawning, bool ForceSpawn)
 {
+	if (!ForceSpawn && !ShouldSpawnMore())
+	{
+		return nullptr;
+	}
+	
 	FActorSpawnParameters ActorSpawnParameters;
 	ActorSpawnParameters.Owner = this;
 	ActorSpawnParameters.bNoFail = true;
@@ -84,7 +88,7 @@ ANPC* ANPCSpawner::SpawnActor(bool ShouldSpawnMore)
 	
 	NPCs.Add(NewNPC);
 	
-	if (ShouldSpawnMore)
+	if (ContinueSpawning)
 	{
 		AttemptSpawnMore();
 	}
@@ -94,16 +98,19 @@ ANPC* ANPCSpawner::SpawnActor(bool ShouldSpawnMore)
 
 void ANPCSpawner::AttemptSpawnMore()
 {
-	if (ShouldSpawnMore())
+	if (!ShouldSpawnMore())
 	{
-		if (NPCs.Num() < MinimumCount)
-		{
-			SpawnActor(true);
-			return;
-		}
-		
-		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ANPCSpawner::OnSpawnTimerEnd, SpawnDelaySeconds, false);
+		return;
 	}
+	
+	// If below the minimum count, then immediately spawn more and continue spawning
+	if (NPCs.Num() < MinimumCount)
+	{
+		SpawnActor(true);
+		return;
+	}
+	
+	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ANPCSpawner::OnSpawnTimerEnd, SpawnDelaySeconds, false);
 }
 
 FVector ANPCSpawner::GetRandomLocation() 
