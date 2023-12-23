@@ -3,19 +3,33 @@
 #include "GameplayTagsManager.h"
 #include "SROPlayerController.h"
 #include "Gameplay/Attributes/CombatAttributeSet.h"
-#include "Gameplay/Combat/Abilities/BasicAttack.h"
+#include "Inventory/Equipment/SROEquipmentInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "SRO/SROGameplayTags.h"
 
+
 AFightingCharacter::AFightingCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
-	CombatAttributes = CreateDefaultSubobject<UCombatAttributeSet>(TEXT("CombatAttributes"));
-	SkillAttributes = CreateDefaultSubobject<USkillAttributeSet>(TEXT("SkillAttributes"));
+	EquipmentComponent = CreateDefaultSubobject<USROEquipmentComponent>(TEXT("EquipmentComponent"));
+}
+
+void AFightingCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AbilitySystemComponent->AddSet<UCombatAttributeSet>();
+	AbilitySystemComponent->AddSet<USkillAttributeSet>();
+
+	if (IsLocallyControlled())
+	{
+		EquipmentComponent->EquipItem(DefaultNoWeapon);
+	}
 }
 
 UAbilitySystemComponent* AFightingCharacter::GetAbilitySystemComponent() const
@@ -37,7 +51,7 @@ float AFightingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 void AFightingCharacter::StartFighting(AFightingCharacter* Target)
 {
-	if (Target == this || !IsLocallyControlled())
+	if (Target == this || !IsLocallyControlled() || Target == nullptr)
 	{
 		return;
 	}
@@ -72,7 +86,7 @@ bool AFightingCharacter::HandleStopFighting_Validate()
 
 bool AFightingCharacter::HandleStartFighting_Validate(AFightingCharacter* Target)
 {
-	if (Target == this)
+	if (Target == this || Target == nullptr)
 	{
 		return false;
 	}
@@ -83,23 +97,23 @@ bool AFightingCharacter::HandleStartFighting_Validate(AFightingCharacter* Target
 void AFightingCharacter::HandleStartFighting_Implementation(AFightingCharacter* Target)
 {
 	FightingTarget = Target;
-	if (FightingTarget)
-	{
-		// FGameplayAbilitySpec* BasicAttackSpec = GetAbilitySystemComponent()->FindAbilitySpecFromInputID(
-		// 	UBasicAttack::StaticClass()->GetDefaultObject<UBasicAttack>()->GetAbilityId());
-		// if (BasicAttackSpec)
-		// {
-		// 	GetAbilitySystemComponent()->TryActivateAbility(BasicAttackSpec->Handle);
-		// }
 
-		AbilitySystemComponent->SetReplicatedLooseGameplayTagCount(SROGameplayTags::Status_Fighting.GetTag(), 1);
-	}
+	AbilitySystemComponent->SetReplicatedLooseGameplayTagCount(SROGameplayTags::Status_Fighting.GetTag(), 1);
+
+	FGameplayTagContainer GameplayTags;
+	GameplayTags.AddTag(SROGameplayTags::Status_Fighting.GetTag());
+	AbilitySystemComponent->TryActivateAbilitiesByTag(GameplayTags, true);
 }
 
 void AFightingCharacter::HandleStopFighting_Implementation()
 {
+	// Clear fighting target
 	FightingTarget = nullptr;
+	
+	// Update tags
 	AbilitySystemComponent->SetReplicatedLooseGameplayTagCount(SROGameplayTags::Status_Fighting.GetTag(), 0);
+	
+	// Call BP event
 	OnFightingTargetUpdated();
 }
 
@@ -121,7 +135,6 @@ FRotator AFightingCharacter::GetFightingTargetRotation() const
 
 	return FRotator{0, Rotation.Yaw, 0};
 }
-
 
 void AFightingCharacter::OnRep_FightingTarget(AFightingCharacter* OldFightingTarget)
 {

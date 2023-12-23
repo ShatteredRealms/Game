@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "SROEquipment.h"
 #include "Gameplay/Abilities/SROAbilitySet.h"
 #include "Net/Serialization/FastArraySerializer.h"
 
@@ -132,6 +133,10 @@ public:
  	/** Returns all equipped instances of a given type, or an empty array if none are found */
  	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<USROEquipmentInstance*> GetEquipmentInstancesOfType(TSubclassOf<USROEquipmentInstance> InstanceType) const;
+
+	/** Returns the equipped instance of the given slot, or nullptr if nothing is equipped in that slot */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TSubclassOf<USROEquipment> GetEquipmentInSlot(ESROEquipmentSlot Slot) const;
 
 	template <typename T>
 	T* GetFirstInstanceOfType()

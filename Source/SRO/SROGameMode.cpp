@@ -16,7 +16,6 @@
 #include "TurboLinkGrpcManager.h"
 #include "TurboLinkGrpcUtilities.h"
 #include "GameFramework/HUD.h"
-#include "Gameplay/Combat/Abilities/BasicAttack.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/TypeContainer.h"
 #include "SSroCharacter/CharacterService.h"

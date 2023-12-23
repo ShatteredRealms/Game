@@ -28,6 +28,13 @@ public:
 	FTransform AttachTransform;
 };
 
+UENUM(BlueprintType)
+enum ESROEquipmentSlot
+{
+	RightHand,
+	LeftHand,
+};
+
 /**
  * 
  */
@@ -42,6 +49,12 @@ public:
 	// Class to spawn
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TSubclassOf<USROEquipmentInstance> InstanceType;
+
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TSet<TEnumAsByte<ESROEquipmentSlot>> EquippableSlots;
+
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TEnumAsByte<ESROEquipmentSlot> EquippedSlot;
 
 	// Gameplay ability sets to grant when this is equipped
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)

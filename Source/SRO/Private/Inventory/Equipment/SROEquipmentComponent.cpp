@@ -265,4 +265,17 @@ TArray<USROEquipmentInstance*> USROEquipmentComponent::GetEquipmentInstancesOfTy
 	return Results;
 }
 
+TSubclassOf<USROEquipment> USROEquipmentComponent::GetEquipmentInSlot(ESROEquipmentSlot Slot) const
+{
+	for (const FSROAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (Entry.Equipment.GetDefaultObject()->EquippedSlot == Slot)
+		{
+			return Entry.Equipment;
+		}
+	}
+
+	return nullptr;
+}
+
 

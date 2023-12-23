@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SROEquipment.h"
 #include "UObject/NoExportTypes.h"
 #include "SROEquipmentInstance.generated.h"
 

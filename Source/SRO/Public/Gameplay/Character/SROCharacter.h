@@ -24,10 +24,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta = (AllowPrivateAccess = "true"))
 	class USROInventoryComponent* InventoryComponent;
 	
-	/** Inventory component for the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory", meta = (AllowPrivateAccess = "true"))
-	class USROEquipmentComponent* EquipmentComponent;
-	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -133,10 +129,6 @@ public:
 	/** Gets the inventory component for the character */
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE USROInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-
-	/** Gets the equipment component for the character */
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE USROEquipmentComponent* GetEquipmentComponent() const { return EquipmentComponent; }
 	
 protected:
 	/** Called for movement input */

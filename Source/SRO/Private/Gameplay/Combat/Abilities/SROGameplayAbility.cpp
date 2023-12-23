@@ -4,16 +4,15 @@
 #include "Gameplay/Combat/Abilities/SROGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
+#include "SROGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_StartAbilityState.h"
 #include "Gameplay/Character/FightingCharacter.h"
-#include "Gameplay/Combat/Abilities/AbilityTags.h"
 #include "SRO/SRO.h"
 
 USROGameplayAbility::USROGameplayAbility(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	ActivationBlockedTags.AddTag(DeadTag);
+	ActivationBlockedTags.AddTag(SROGameplayTags::Status_Death.GetTag());
 }
 
 void USROGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -81,7 +80,7 @@ bool USROGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 	for (const auto Requirement : Requirements)
 	{
-		float CurrentValue = Requirement.Key.GetNumericValue(FightingCharacter->GetSkillAttributeSet().Get());
+		float CurrentValue = Requirement.Key.GetNumericValue(FightingCharacter->GetSkillAttributeSet());
 		if (CurrentValue < Requirement.Value)
 		{
 			UE_LOG(LogSRO, Verbose, TEXT("Requirement %s needs %d but has %d."), *Requirement.Key.GetName(), CurrentValue, Requirement.Value)

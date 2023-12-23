@@ -46,6 +46,8 @@ namespace SROGameplayTags
 	SRO_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death);
 	SRO_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dying);
 	SRO_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death_Dead);
+	
+	SRO_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Combat_Weapon);
 
 	// These are mappings from MovementMode enums to GameplayTags associated with those enums (below)
 	SRO_API extern const TMap<uint8, FGameplayTag> MovementModeTagMap;
