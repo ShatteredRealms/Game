@@ -128,6 +128,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MovementSpeed, Category="Adventuring")
 	FGameplayAttributeData MovementSpeed;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Unknown")
+	FGameplayAttributeData Unknown;
 public:
 	FGameplayAttributeData& GetAttributeData(ESkill Skill);
 	

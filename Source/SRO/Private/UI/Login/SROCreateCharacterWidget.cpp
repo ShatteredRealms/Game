@@ -39,7 +39,7 @@ void USROCreateCharacterWidget::CreateCharacter()
 	}
 	
 	// @TODO(wil): Read from the lists to get the gender and realm ids
-	USROCharactersWebLibrary::CreateCharacter(Request, GI->AuthToken, GI->UserId, NameTextBox->GetText().ToString(), "Male", "Human");
+	USROCharactersWebLibrary::CreateCharacter(Request, GI->AuthToken, GI->UserId, NameTextBox->GetText().ToString(), "Male", "Human", "Neon Nexus");
 }
 
 void USROCreateCharacterWidget::Cancel()

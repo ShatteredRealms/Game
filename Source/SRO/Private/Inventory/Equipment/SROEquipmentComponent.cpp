@@ -75,7 +75,7 @@ USROEquipmentInstance* FSROEquipmentList::AddEntry(TSubclassOf<USROEquipment> Eq
 	{
 		InstanceType = USROEquipmentInstance::StaticClass();
 	}
-	
+
 	FSROAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Equipment = Equipment;
 	NewEntry.Instance = NewObject<USROEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);  //@TODO: Using the actor instead of component as the outer due to UE-127172

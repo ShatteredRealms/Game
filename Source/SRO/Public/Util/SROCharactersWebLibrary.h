@@ -20,5 +20,6 @@ public:
 
 	static void GetCharacters(FString UserId, FString AuthToken, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request);
 	
-	static void CreateCharacter(TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request, FString AuthToken, FString OwnerId, FString Name, FString Gender, FString Realm);
+	static void CreateCharacter(TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request, FString AuthToken, FString OwnerId, FString Name, FString Gender, FString
+	                            Realm, FString Dimension);
 };

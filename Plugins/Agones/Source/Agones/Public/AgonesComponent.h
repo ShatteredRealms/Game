@@ -17,8 +17,8 @@
 #include "Classes.h"
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "IWebSocket.h"
 #include "Interfaces/IHttpRequest.h"
-#include "WebSockets/Public/IWebSocket.h"
 
 #include "AgonesComponent.generated.h"
 

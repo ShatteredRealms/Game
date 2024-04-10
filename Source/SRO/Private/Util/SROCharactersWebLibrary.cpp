@@ -40,7 +40,7 @@ void USROCharactersWebLibrary::GetCharacters(FString UserId, FString AuthToken, 
 }
 
 void USROCharactersWebLibrary::CreateCharacter(TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request, FString AuthToken,
-	FString OwnerId, FString Name, FString Gender, FString Realm)
+	FString OwnerId, FString Name, FString Gender, FString Realm, FString Dimension)
 {
 	const FString Url = FString::Format(
 		TEXT("{0}/users/id/{1}/characters"),
@@ -54,13 +54,14 @@ void USROCharactersWebLibrary::CreateCharacter(TSharedRef<IHttpRequest, ESPMode:
 	);
 	
 	const FString Body = FString::Format(
-		TEXT("{\"name\":\"{0}\",\"gender\":\"{1}\",\"realm\":\"{2}\"}"),
+		TEXT("{\"name\":\"{0}\",\"gender\":\"{1}\",\"realm\":\"{2}\",\"dimension\":{\"name\":\"{3}\"}}"),
 		static_cast<FStringFormatOrderedArguments>(
-			TArray<FStringFormatArg, TFixedAllocator<3>>
+			TArray<FStringFormatArg, TFixedAllocator<4>>
 			{
 				FStringFormatArg(Name),
 				FStringFormatArg(Gender),
 				FStringFormatArg(Realm),
+				FStringFormatArg(Dimension),
 			}
 		)
 	);

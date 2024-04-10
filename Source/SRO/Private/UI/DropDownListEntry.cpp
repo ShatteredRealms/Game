@@ -8,8 +8,8 @@
 void UDropDownListEntry::NativeConstruct()
 {
 	Super::NativeConstruct();
-	OriginalHoveredStyle = Button->WidgetStyle.Hovered;
-	OriginalStyle = Button->WidgetStyle.Normal;
+	OriginalHoveredStyle = Button->GetStyle().Hovered;
+	OriginalStyle = Button->GetStyle().Normal;
 }
 
 void UDropDownListEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
@@ -24,7 +24,9 @@ void UDropDownListEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	Button->OnClicked.AddDynamic(this, &UDropDownListEntry::OnClicked);
 	Button->OnHovered.AddDynamic(this, &UDropDownListEntry::OnSelected);
 	Button->OnUnhovered.AddDynamic(this, &UDropDownListEntry::OnUnhovered);
-	Button->WidgetStyle.Normal = OriginalStyle;
+	FButtonStyle style = Button->GetStyle();
+	style.Normal = OriginalStyle;
+	Button->SetStyle(style);
 }
 
 void UDropDownListEntry::NativeOnItemSelectionChanged(bool bIsSelected)
@@ -33,11 +35,16 @@ void UDropDownListEntry::NativeOnItemSelectionChanged(bool bIsSelected)
 
 	if (bIsSelected)
 	{
-		Button->WidgetStyle.Normal = OriginalHoveredStyle;
+
+		FButtonStyle style = Button->GetStyle();
+		style.Normal = OriginalHoveredStyle;
+		Button->SetStyle(style);
 	}
 	else
 	{
-		Button->WidgetStyle.Normal = OriginalStyle;
+		FButtonStyle style = Button->GetStyle();
+		style.Normal = OriginalStyle;
+		Button->SetStyle(style);
 	}
 }
 

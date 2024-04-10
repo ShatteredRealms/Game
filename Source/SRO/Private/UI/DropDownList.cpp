@@ -8,7 +8,7 @@
 
 UDropDownList::UDropDownList(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	bIsFocusable = true;
+	SetIsFocusable(true);
 }
 
 UDropDownData* UDropDownList::CreateEntry(FString Name)

@@ -3,20 +3,30 @@
 
 #include "SROGameSession.h"
 
-FString ASROGameSession::GetAuthClientId()
-{
-#if UE_BUILD_DEVELOPMENT
-	return AuthClientIdDev;
-#else
-	return AuthClientIdProd;
-#endif
-}
+#include "SRO.h"
 
-FString ASROGameSession::GetAuthClientSecret()
+ASROGameSession::ASROGameSession()
 {
-#if UE_BUILD_DEVELOPMENT
-	return AuthClientSecretDev;
-#else
-	return AuthClientSecretProd;
-#endif
+	const FString EnvAuthClientId = FPlatformMisc::GetEnvironmentVariable(TEXT("SRO_AUTH_CLIENT_ID"));
+	const FString EnvAuthClientSecret = FPlatformMisc::GetEnvironmentVariable(TEXT("SRO_AUTH_CLIENT_SECRET"));
+
+	if (!EnvAuthClientId.IsEmpty())
+	{
+		UE_LOG(LogSRO, Display, TEXT("Using AuthClientId from environment: %s"), *EnvAuthClientId);
+		AuthClientId = EnvAuthClientId;
+	}
+	else
+	{
+		UE_LOG(LogSRO, Display, TEXT("Using default AuthClientId: %s"), *AuthClientId);
+	}
+
+	if (!EnvAuthClientSecret.IsEmpty())
+	{
+		UE_LOG(LogSRO, Display, TEXT("Using EnvAuthClientSecret	from environment: %s"), *EnvAuthClientSecret);
+		AuthClientSecret = EnvAuthClientSecret;
+	}
+	else
+	{
+		UE_LOG(LogSRO, Display, TEXT("Using default AuthClientSecret: %s"), *AuthClientSecret);
+	}
 }

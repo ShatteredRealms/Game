@@ -18,70 +18,78 @@ FString UKeycloak::GetEndpointUrl(EEndpoint Endpoint) const
 	switch (Endpoint) {
 	case WellKnown:
 			return FString::Format(
-				TEXT("/realms/{0}/.well-known/openid-configuration"),
+				TEXT("{0}/realms/{1}/.well-known/openid-configuration"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case Authorization:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/auth"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/auth"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case Token:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/token"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/token"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case UserInfo:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/userinfo"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/userinfo"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case Logout:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/logout"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/logout"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case Certificate:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/certs"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/certs"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case Introspection:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/token/introspect"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/token/introspect"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			); 
 		
 		case TokenRevocation:
 			return FString::Format(
-				TEXT("/realms/{0}/protocol/openid-connect/token/revoke"),
+				TEXT("{0}/realms/{1}/protocol/openid-connect/token/revoke"),
 				FStringFormatOrderedArguments({
-					FStringFormatArg(DevSettings->GetKeycloakRealmName()),
+					FStringFormatArg(Host),
+					FStringFormatArg(Realm),
 				})
 			);
 		
 		default:
-			return "/EndpointNotDefinded";
+			return Host+"/EndpointNotDefinded";
 	}
 }
 
@@ -90,7 +98,7 @@ void UKeycloak::UpdateJWKs()
 	FHttpModule* Http = &FHttpModule::Get();
 	FHttpRequestRef Request = Http->CreateRequest();
 	const USRODevSettings* DevSettings = GetDefault<USRODevSettings>();
-	Request->SetURL(DevSettings->GetKeycloakHost()+GetEndpointUrl(Certificate));
+	Request->SetURL(GetEndpointUrl(Certificate));
 	UE_LOG(LogSRO, Display, TEXT("Endpoint: %s"), *Request->GetURL());
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 	Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));
@@ -129,7 +137,7 @@ void UKeycloak::RefreshAuthToken(FString& RefreshToken) const
 	FHttpModule* Http = &FHttpModule::Get();
 	FHttpRequestRef Request = Http->CreateRequest();
 	const USRODevSettings* DevSettings = GetDefault<USRODevSettings>();
-	Request->SetURL(DevSettings->GetKeycloakHost()+GetEndpointUrl(Certificate));
+	Request->SetURL(GetEndpointUrl(Certificate));
 	Request->SetVerb("POST");
 	Request->SetHeader(TEXT("Content-Type"), TEXT("x-www-form-urlencoded"));
 	Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));
@@ -137,7 +145,7 @@ void UKeycloak::RefreshAuthToken(FString& RefreshToken) const
 	Request->SetContentAsString(FString::Format(
 		TEXT("client_id={0}&grant_type=refresh_token&refresh_token={2}"),
 		FStringFormatOrderedArguments({
-			DevSettings->GetKeycloakClientId(),
+			ClientId,
 			RefreshToken,
 		})
 	));
@@ -195,17 +203,17 @@ void UKeycloak::Login(const FString& Username, const FString& Password,
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request) const
 {
 	const USRODevSettings* DevSettings = GetDefault<USRODevSettings>();
-	Request->SetURL(DevSettings->GetKeycloakHost()+GetEndpointUrl(Token));
+	Request->SetURL(GetEndpointUrl(Token));
 	Request->SetVerb("POST");
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
-	Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));
+	// Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));
 	Request->SetHeader(TEXT("Accepts"), TEXT("application/json"));
 	Request->SetContentAsString(FString::Format(
 		TEXT("client_id={0}&username={1}&password={2}&grant_type=password"),
 		static_cast<FStringFormatOrderedArguments>(
 			TArray<FStringFormatArg, TFixedAllocator<3>>
 			{
-				FStringFormatArg(DevSettings->GetKeycloakClientId()),
+				FStringFormatArg(ClientId),
 				FStringFormatArg(Username.TrimStartAndEnd()),
 				FStringFormatArg(Password.TrimStartAndEnd()),
 			})
@@ -217,7 +225,7 @@ void UKeycloak::Login(const FString& Username, const FString& Password,
 void UKeycloak::ClientLogin(const FString& Id, const FString Secret, TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request)
 {
 	const USRODevSettings* DevSettings = GetDefault<USRODevSettings>();
-	Request->SetURL(DevSettings->GetKeycloakHost()+GetEndpointUrl(Token));
+	Request->SetURL(GetEndpointUrl(Token));
 	Request->SetVerb("POST");
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
 	Request->SetHeader(TEXT("User-Agent"), TEXT("X-UnrealEngine-Agent"));

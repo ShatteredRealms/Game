@@ -6,9 +6,10 @@ public class SRO : ModuleRules
 {
 	public SRO(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] { "OculusEditor"  });
-		CppStandard = CppStandardVersion.Cpp17;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		// PrivateDependencyModuleNames.AddRange(new string[] { "OculusEditor"  });
+		DefaultBuildSettings = BuildSettingsVersion.V4;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		CppStandard = CppStandardVersion.Latest;
 		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bEnableExceptions = true;

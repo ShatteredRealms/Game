@@ -7,6 +7,8 @@
 UENUM(BlueprintType)
 enum ESkill
 {
+	Unknown,
+	
 	Strength,
 	Stamina,
 	Agility,

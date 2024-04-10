@@ -43,13 +43,6 @@ class SRO_API USROWebLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/** Gets the API URL for the backend server. The URL does NOT end in a forward slash. */
-	UFUNCTION(BlueprintCallable)
-	static FString GetAPIUrl();
-	
-	UFUNCTION(BlueprintCallable)
-	static FString GetGRPCAPIUrl();
-	
 	UFUNCTION(BlueprintCallable)
 	static FString GetGameBackendAPIUrl();
 	
@@ -57,13 +50,7 @@ public:
 	static FString GetCharactersAPIUrl();
 
 	UFUNCTION(BlueprintCallable)
-	static FString GetAccountsAPIUrl();
-
-	UFUNCTION(BlueprintCallable)
 	static FString GetChatAPIUrl();
-
-	UFUNCTION(BlueprintCallable)
-	static FString GetChatGRPCUrl();
 
 	/** Sets the necessary headers for a valid HTTP request and processes it. */
 	static void ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL, const FString& RequestType, const FString& Body);
@@ -76,4 +63,7 @@ public:
 	
 	/** Returns a string in case of an error. Otherwise returns an empty string and a valid JsonObject containing the JSON response. */
 	static FString ValidateJsonResponse(const bool& bWasSuccessful, const FHttpResponsePtr& Response, TSharedPtr<FJsonObject>& JsonObject);
+
+	/** Creates metadata with an authorization bearer token */
+	static TMap<FString, FString> CreateAuthMetaData(FString AuthToken);
 };

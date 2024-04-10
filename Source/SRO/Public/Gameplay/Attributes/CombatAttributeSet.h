@@ -58,7 +58,7 @@ public:
 	virtual void OnRep_Level(const FGameplayAttributeData& OldLevel);
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UCombatAttributeSet, Level);
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(Level);
-	GAMEPLAYATTRIBUTE_VALUE_SETTER_WITHMIN(Level, 0);
+	FORCEINLINE void SetLevel(float NewVal) { NewVal = FMath::Max(NewVal, 0); UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent(); if (ensure(AbilityComp)) { AbilityComp->SetNumericAttributeBase(GetLevelAttribute(), NewVal); }; };
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(Level);
 
 	UFUNCTION()

@@ -109,6 +109,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Ability")
 	FORCEINLINE TSet<TSubclassOf<USROGameplayAbility>> GetAllGameplayAbilities() const { return AllAbilities; }
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };
 
 

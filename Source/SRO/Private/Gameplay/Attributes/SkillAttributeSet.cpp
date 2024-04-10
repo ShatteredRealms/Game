@@ -10,7 +10,6 @@
 
 FGameplayAttributeData& USkillAttributeSet::GetAttributeData(ESkill Skill)
 {
-	FGameplayAttributeData Data;
 	switch (Skill)
 	{
 	case ESkill::Strength: return Strength;
@@ -52,7 +51,7 @@ FGameplayAttributeData& USkillAttributeSet::GetAttributeData(ESkill Skill)
 	case ESkill::MovementSpeed: return MovementSpeed;
 	default:
 		UE_LOG(LogSRO, Error, TEXT("Unknown SkillAttribute enum"))
-		return Data;
+		return Unknown;
 	}
 }
 

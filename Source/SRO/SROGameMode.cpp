@@ -25,7 +25,7 @@
 ASROGameMode::ASROGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/SRO/Core/Gameplay/BP_SROCharacter"));
+	static ConstructorHelpers::FClassFinder<ASROCharacter> PlayerPawnBPClass(TEXT("/Game/SRO/Core/Gameplay/BP_SROCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
@@ -35,7 +35,7 @@ ASROGameMode::ASROGameMode()
 		DefaultPawnClass = ASROCharacter::StaticClass();
 	}
 	
-	static ConstructorHelpers::FClassFinder<AHUD> SROHUDBPClass(TEXT("/Game/SRO/Core/UI/BP_SROHud"));
+	static ConstructorHelpers::FClassFinder<ASROHud> SROHUDBPClass(TEXT("/Game/SRO/Core/UI/BP_SROHud"));
 	if (SROHUDBPClass.Class != NULL)
 	{
 		HUDClass = SROHUDBPClass.Class;
@@ -138,7 +138,8 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	check(GS)
 	const auto Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &ASROGameMode::OnServerCredentialsReceived);
-	Keycloak->ClientLogin(GS->GetAuthClientId(), GS->GetAuthClientSecret(), Request);
+	Keycloak->ClientLogin(GS->AuthClientId, GS->AuthClientSecret, Request);
+	UE_LOG(LogSRO, Display, TEXT("GameMode authenticating with client: %s and secret: %s"), *GS->AuthClientId, *GS->AuthClientSecret);
 
 	// Setup TLM
 	auto TLM = UTurboLinkGrpcUtilities::GetTurboLinkGrpcManager(GetWorld());
@@ -159,11 +160,12 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	ConnectionServiceClient = ConnectionService->MakeClient();
 	ConnectionServiceClient->OnVerifyConnectResponse.AddUniqueDynamic(this, &ASROGameMode::OnVerifyConnectResponseReceived);
 
-#if UE_BUILD_DEVELOPMENT
-	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceDev")));
-#else
-	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
-#endif
+	ConnectionService->Connect();
+// #if UE_BUILD_DEVELOPMENT
+// 	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceDev")));
+// #else
+// 	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
+// #endif
 
 	// Setup connection service
 	auto CharacterService = Cast<UCharacterService>(TLM->MakeService("CharacterService"));
@@ -176,11 +178,12 @@ void ASROGameMode::InitGame(const FString& MapName, const FString& Options, FStr
 	CharacterServiceClient = CharacterService->MakeClient();
 	CharacterServiceClient->OnEditCharacterResponse.AddUniqueDynamic(this, &ASROGameMode::OnEditCharacterResponseReceived);
 
-#if UE_BUILD_DEVELOPMENT
-	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceDev")));
-#else
-	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceProd")));
-#endif
+	CharacterService->Connect();
+// #if UE_BUILD_DEVELOPMENT
+// 	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceDev")));
+// #else
+// 	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceProd")));
+// #endif
 }
 
 
@@ -202,7 +205,8 @@ void ASROGameMode::PreLogin(const FString& Options, const FString& Address, cons
 	Request.ServerName = ServerName;
 	const FPendingConnection PendingConnection{Options, Address, UniqueId};
 	PendingConnections.Add(Handle, PendingConnection);
-	ConnectionServiceClient->VerifyConnect(Handle, Request, AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(AuthToken);
+	ConnectionServiceClient->VerifyConnect(Handle, Request, MetaData);
 }
 
 APlayerController* ASROGameMode::SpawnPlayerControllerCommon(ENetRole InRemoteRole, FVector const& SpawnLocation,
@@ -336,13 +340,12 @@ APawn* ASROGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, 
 void ASROGameMode::Logout(AController* Exiting)
 {
 	ASROPlayerController* PC = Cast<ASROPlayerController>(Exiting);
-	if (!PC)
+	if (PC)
 	{
-		Super::Logout(Exiting);
-		return;
+		SyncCharacter(PC);
 	}
 	
-	SyncCharacter(PC);
+	Super::Logout(Exiting);
 }
 
 void ASROGameMode::UpdateAuthTokens_Implementation(const FString& NewAuthToken, const FString& NewRefreshToken)
@@ -397,20 +400,21 @@ void ASROGameMode::OnGameServerDetailsReceived(const FGameServerResponse& Respon
 
 void ASROGameMode::SyncCharacter(ASROPlayerController* PC)
 {
-	auto Character = Cast<ASROCharacter>(PC->GetCharacter());
+	ASROCharacter*	Character = Cast<ASROCharacter>(PC->GetCharacter());
 	if (!Character)
 	{
+		UE_LOG(LogSRO, Error, TEXT("Unable to sync character. No SRO character found."))
 		return;
 	}
 
 	FGrpcSroLocation Location;
 	Location.World = AgonesMapName;
-	Location.X = PC->GetPawn()->GetActorLocation().X;
-	Location.Y = PC->GetPawn()->GetActorLocation().Y;
-	Location.Z = PC->GetPawn()->GetActorLocation().Z;
-	Location.Roll = PC->GetPawn()->GetActorRotation().Roll;
-	Location.Pitch = PC->GetPawn()->GetActorRotation().Pitch;
-	Location.Yaw = PC->GetPawn()->GetActorRotation().Yaw;
+	Location.X = Character->GetActorLocation().X;
+	Location.Y = Character->GetActorLocation().Y;
+	Location.Z = Character->GetActorLocation().Z;
+	Location.Roll = Character->GetActorRotation().Roll;
+	Location.Pitch = Character->GetActorRotation().Pitch;
+	Location.Yaw = Character->GetActorRotation().Yaw;
 	
 	FGrpcSroCharacterEditCharacterRequest Request;
 	Request.Target.Type.TypeCase = EGrpcSroCharacterCharacterTargetType::Id;
@@ -420,10 +424,18 @@ void ASROGameMode::SyncCharacter(ASROPlayerController* PC)
 	Request.Optional_play_time.PlayTime = Character->GetCharacterDetails().PlayTime + Character->GetPlayTimespan();
 	
 	const auto Handle = CharacterServiceClient->InitEditCharacter();
-	CharacterServiceClient->EditCharacter(Handle, Request, AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(AuthToken);
+	CharacterServiceClient->EditCharacter(Handle, Request, MetaData);
 
-	PC->GetPawn()->Destroy();
-	PC->SetPawn(nullptr);
+	Character->Destroy();
+	PC->AcknowledgedPawn = nullptr;
+}
+
+void ASROGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	CharacterServiceClient->Shutdown();
+	ConnectionServiceClient->Shutdown();
+	Super::EndPlay(EndPlayReason);
 }
 
 void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -438,6 +450,7 @@ void ASROGameMode::OnServerCredentialsReceived(FHttpRequestPtr Request, FHttpRes
 
 	AuthToken = JsonObject->GetStringField("access_token");
 	RefreshToken = JsonObject->GetStringField("refresh_token");
+	UE_LOG(LogSRO, Verbose, TEXT("Got server client credentialss"));
 }
 
 void ASROGameMode::RequestUpdateTokens()

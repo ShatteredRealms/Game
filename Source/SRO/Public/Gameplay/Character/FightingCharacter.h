@@ -14,12 +14,12 @@
 
 #define GAMEPLAYATTRIBUTE_ACTOR_GETTER(AttributeSetName, PropertyName, Combat) \
 	UFUNCTION(BlueprintCallable, Category="Attributes")\
-	FORCEINLINE float Get##PropertyName##() const \
+	FORCEINLINE float Get##PropertyName() const \
 	{ \
 		const U##AttributeSetName##AttributeSet* AttributeSet = Get##AttributeSetName##AttributeSet(); \
 		if (IsValid(AttributeSet)) \
 		{ \
-		    return AttributeSet->Get##PropertyName##();\
+		    return AttributeSet->Get##PropertyName();\
 		} \
 		return 0.f; \
 	};

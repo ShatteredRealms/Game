@@ -16,12 +16,12 @@ UTargetingComponent::UTargetingComponent(const FObjectInitializer& ObjectInitial
 		SetWidgetClass(FoundTargetDetailsWidget.Class);
 	}
 	
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> FoundMaterial(TEXT("/Game/SRO/Core/UI/Materials/Widget3DPassThrough_FaceCamera"));
-	if (FoundMaterial.Succeeded())
-	{
-		SetMaterial(0, FoundMaterial.Object);
-	}
-
+	// static ConstructorHelpers::FObjectFinder<UMaterialInstance> FoundMaterial(TEXT("/Game/SRO/Core/UI/Materials/Widget3DPassThrough_FaceCamera"));
+	// if (FoundMaterial.Succeeded())
+	// {
+	// 	SetMaterial(0, FoundMaterial.Object);
+	// }
+	//
 	SetUsingAbsoluteRotation(true);
 	bDrawAtDesiredSize = true;
 }

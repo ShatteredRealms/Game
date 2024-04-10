@@ -17,10 +17,10 @@
 #include "Engine/World.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
-#include "JsonUtilities/Public/JsonObjectConverter.h"
 #include "TimerManager.h"
-#include "WebSockets/Public/IWebSocket.h"
-#include "WebSockets/Public/WebSocketsModule.h"
+#include "IWebSocket.h"
+#include "JsonObjectConverter.h"
+#include "WebSocketsModule.h"
 
 UAgonesComponent::UAgonesComponent()
 {

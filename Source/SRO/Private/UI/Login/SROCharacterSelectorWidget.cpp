@@ -14,6 +14,7 @@
 #include "SSroCharacter/CharacterService.h"
 #include "SSroGamebackend/ConnectionService.h"
 #include "UI/Login/SROLoginHUD.h"
+#include "Util/SROWebLibrary.h"
 
 void USROCharacterSelectorWidget::NativeConstruct()
 {
@@ -39,19 +40,13 @@ void USROCharacterSelectorWidget::NativeConstruct()
 		UE_LOG(LogSRO, Error, TEXT("Unable to create character service"));
 		return;
 	}
-
 	CharacterServiceClient = CharacterService->MakeClient();
 	CharacterServiceClient->OnGetCharactersResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnGetCharactersReceived);
-	
-
-#if UE_BUILD_DEVELOPMENT
-	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceDev")));
-#else
-	CharacterService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("CharacterServiceProd")));
-#endif
+	CharacterService->Connect();
 	
 	const auto Handle = CharacterServiceClient->InitGetCharacters();
-	CharacterServiceClient->GetCharacters(Handle, {}, GI->AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(GI->AuthToken);
+	CharacterServiceClient->GetCharacters(Handle, FGrpcGoogleProtobufEmpty(), MetaData);
 
 	auto ConnectionService = Cast<UConnectionService>(TLM->MakeService("ConnectionService"));
 	if (!ConnectionService)
@@ -59,21 +54,13 @@ void USROCharacterSelectorWidget::NativeConstruct()
 		UE_LOG(LogSRO, Error, TEXT("Unable to create connection service"));
 		return;
 	}
-
 	ConnectionServiceClient = ConnectionService->MakeClient();
 	ConnectionServiceClient->OnConnectGameServerResponse.AddUniqueDynamic(this, &USROCharacterSelectorWidget::OnConnectResponseReceived);
-
-#if UE_BUILD_DEVELOPMENT
-	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceDev")));
-#else
-	ConnectionService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ConnectionServiceProd")));
-#endif
+	ConnectionService->Connect();
 	
 	SelectedCharacterSpawnLocation = {0, 0, 0};
 	SelectedCharacterSpawnRotator = {0, 0, 0};
-
 	BaseActorClass = ASROCharacter::StaticClass();
-
 	PlayThrobber->SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -151,10 +138,12 @@ void USROCharacterSelectorWidget::Play()
 	FGrpcSroCharacterCharacterTarget Request;
 	Request.Type.Id = Character->GRPCData.Id;
 	Request.Type.TypeCase = EGrpcSroCharacterCharacterTargetType::Id;
-	ConnectionServiceClient->ConnectGameServer(Handle, Request, GI->AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(GI->AuthToken);
+	ConnectionServiceClient->ConnectGameServer(Handle, Request, MetaData);
 	
 	PlayThrobber->SetVisibility(ESlateVisibility::HitTestInvisible);
 	PlayButton->SetIsEnabled(false);
+	ErrorText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void USROCharacterSelectorWidget::OnConnectResponseReceived(
@@ -164,6 +153,21 @@ void USROCharacterSelectorWidget::OnConnectResponseReceived(
 {
 	PlayThrobber->SetVisibility(ESlateVisibility::Hidden);
 	PlayButton->SetIsEnabled(true);
+
+	if (GrpcResult.Code != EGrpcResultCode::Ok)
+	{
+		if (GrpcResult.Message.IsEmpty())
+		{
+			ErrorText->SetText(FText::FromString(TEXT("An error occurred")));
+		}
+		else
+		{
+			ErrorText->SetText(FText::FromString(GrpcResult.Message));
+		}
+		ErrorText->SetText(FText::FromString(GrpcResult.Message));
+		ErrorText->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
 	
 	ASROOfflineController* PC = Cast<ASROOfflineController>(GetOwningPlayer());
 	if (!PC)

@@ -8,7 +8,11 @@ public class SROServerTarget : TargetRules
 	public SROServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
+		DefaultBuildSettings = BuildSettingsVersion.V4;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		CppStandard = CppStandardVersion.Latest;
+		BuildEnvironment = TargetBuildEnvironment.Unique;
+		bUseLoggingInShipping = true;
 		ExtraModuleNames.Add("SRO");
 	}
 }

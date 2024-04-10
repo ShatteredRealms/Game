@@ -9,6 +9,7 @@
 #include "SRO/SRO.h"
 #include "SRO/SROGameInstance.h"
 #include "SSroChat/ChatService.h"
+#include "Util/SROWebLibrary.h"
 
 class UTurboLinkGrpcManager;
 
@@ -55,11 +56,12 @@ void USROChatManager::InitService(USROGameInstance* OwningGameInstance)
 	ChatServiceClient->OnContextStateChange.AddUniqueDynamic(this, &USROChatManager::OnStatusChanged);
 	ChatServiceClient->OnGetAuthorizedChatChannelsResponse.AddUniqueDynamic(this, &USROChatManager::OnGetAuthorizedChatChannelsResponse);
 
-#if UE_BUILD_DEVELOPMENT
-	ChatService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ChatServiceDev")));
-#else
-	ChatService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ChatServiceProd")));
-#endif
+	ChatService->Connect();
+// #if UE_BUILD_DEVELOPMENT
+// 	ChatService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ChatServiceDev")));
+// #else
+// 	ChatService->Connect(UTurboLinkGrpcUtilities::GetTurboLinkGrpcConfig()->GetServiceEndPoint(TEXT("ChatServiceProd")));
+// #endif
 }
 
 void USROChatManager::ConnectAllChannels()
@@ -69,7 +71,8 @@ void USROChatManager::ConnectAllChannels()
 	FGrpcSroCharacterCharacterTarget Request;
 	Request.Type = FGrpcSroCharacterCharacterTargetType{};
 	Request.Type.Id = GameInstance->SelectedCharacterId;
-	ChatServiceClient->GetAuthorizedChatChannels(Handle, Request, GameInstance->AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(GameInstance->AuthToken);
+	ChatServiceClient->GetAuthorizedChatChannels(Handle, Request, MetaData);
 }
 
 bool USROChatManager::ConnectToChannel(UChatChannel* ChatChannel, FString AuthToken)
@@ -87,7 +90,8 @@ bool USROChatManager::ConnectToChannel(UChatChannel* ChatChannel, FString AuthTo
 	const FGrpcContextHandle Handle = ChatServiceClient->InitConnectChannel();
 	FGrpcSroChatChatChannelTarget Request;
 	Request.Id = ChatChannel->Struct.Id;
-	ChatServiceClient->ConnectChannel(Handle, Request, AuthToken);
+	TMap<FString, FString> MetaData = USROWebLibrary::CreateAuthMetaData(AuthToken);
+	ChatServiceClient->ConnectChannel(Handle, Request, MetaData);
 
 	// Relate data
 	ChatChannel->ContextHandle = Handle;

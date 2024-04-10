@@ -123,6 +123,23 @@ protected:
 	FKeycloakAdapterRefreshAuthTokenDelegate RefreshAuthTokenDelegate;
 	
 public:
+	/**
+	 * The development keycloak realm name
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite)
+	FString Realm = "default";
+	
+	/**
+	 * The development keycloak client id
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite)
+	FString ClientId = "sro-gameclient";
+	
+	/**
+	 * The development keycloak host
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite)
+	FString Host = "http://localhost:8080";
 
 	/**
 	 * Gets the fully qualified API endpoint given the endpoint enum

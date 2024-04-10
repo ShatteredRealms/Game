@@ -3,65 +3,27 @@
 
 #include "Util/SROWebLibrary.h"
 
+#include "Auth/Keycloak/Keycloak.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Util/BackendSettings.h"
 
-FString USROWebLibrary::GetAPIUrl()
-{
-	const UBackendSettings* Settings = GetDefault<UBackendSettings>();
-	return Settings->APIUrl;
-}
-
-FString USROWebLibrary::GetGRPCAPIUrl()
-{
-	const UBackendSettings* Settings = GetDefault<UBackendSettings>();
-	return Settings->GRPCAPIUrl;
-}
-
 FString USROWebLibrary::GetGameBackendAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT
-	return "localhost:8082/v1";
-#else
-	return GetAPIUrl()+"/gamebackend/v1";
-#endif
+	const UBackendSettings* BackendSettings = GetDefault<UBackendSettings>();
+	return BackendSettings->GameBackendHTTPUrl;
 }
 
 FString USROWebLibrary::GetCharactersAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT
-	return "localhost:8081/v1";
-#else
-	return GetAPIUrl()+"/characters/v1";
-#endif
-}
-
-FString USROWebLibrary::GetAccountsAPIUrl()
-{
-#if UE_BUILD_DEVELOPMENT
-	return "localhost:8080/v1";
-#else
-	return GetAPIUrl()+"/accounts/v1";
-#endif
+	const UBackendSettings* BackendSettings = GetDefault<UBackendSettings>();
+	return BackendSettings->CharacterHTTPUrl;
 }
 
 FString USROWebLibrary::GetChatAPIUrl()
 {
-#if UE_BUILD_DEVELOPMENT
-	return "localhost:8180/v1";
-#else
-	return GetAPIUrl()+"/chat/v1";
-#endif
-}
-
-FString USROWebLibrary::GetChatGRPCUrl()
-{
-#if UE_BUILD_DEVELOPMENT
-	return "localhost:8180";
-#else
-	return "chat."+GetGRPCAPIUrl()+":8180";
-#endif
+	const UBackendSettings* BackendSettings = GetDefault<UBackendSettings>();
+	return BackendSettings->ChatHTTPUrl;
 }
 
 void USROWebLibrary::ProcessJSONRequest(TSharedRef<IHttpRequest, ESPMode::ThreadSafe>& Request, const FString& URL,
@@ -90,7 +52,6 @@ void USROWebLibrary::ProcessAuthRequest(TSharedRef<IHttpRequest, ESPMode::Thread
 	);
 	
 	Request->SetHeader(TEXT("Authorization"), Authorization);
-	
 	
 	ProcessJSONRequest(Request, URL, RequestType, Body);
 }
@@ -126,7 +87,6 @@ FString USROWebLibrary::ValidateJsonResponse(const bool& bWasSuccessful, const F
 	}
 	
 	TSharedPtr<FJsonObject> OutObject;
-
 	if (const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		!FJsonSerializer::Deserialize(Reader, OutObject))
 	{
@@ -135,4 +95,10 @@ FString USROWebLibrary::ValidateJsonResponse(const bool& bWasSuccessful, const F
 	
 	JsonObject = OutObject.ToSharedRef();
 	return TEXT("");;
+}
+
+TMap<FString, FString> USROWebLibrary::CreateAuthMetaData(FString AuthToken)
+{
+	TMap<FString, FString> MetaData = {{"authorization", FString::Format(TEXT("Bearer {0}"), { AuthToken })}};
+	return MetaData;
 }

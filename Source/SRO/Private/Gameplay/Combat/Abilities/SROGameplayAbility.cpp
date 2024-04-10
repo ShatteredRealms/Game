@@ -78,7 +78,7 @@ bool USROGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 		return true;
 	}
 
-	for (const auto Requirement : Requirements)
+	for (const TTuple<FGameplayAttribute, float>& Requirement: Requirements)
 	{
 		float CurrentValue = Requirement.Key.GetNumericValue(FightingCharacter->GetSkillAttributeSet());
 		if (CurrentValue < Requirement.Value)

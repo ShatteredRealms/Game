@@ -15,21 +15,13 @@ class SRO_API ASROGameSession : public AGameSession
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(Config)
-	FString AuthClientIdDev;
+	ASROGameSession();
 	
-	UPROPERTY(Config)
-	FString AuthClientSecretDev;
-
-	UPROPERTY(Config)
-	FString AuthClientIdProd;
+	UPROPERTY(Config, VisibleAnywhere, BlueprintReadOnly, Category = "Auth")
+	FString AuthClientId = "sro-gameserver";
 	
-	UPROPERTY(Config)
-	FString AuthClientSecretProd;
+	UPROPERTY(Config, VisibleAnywhere, BlueprintReadOnly, Category = "Auth")
+	FString AuthClientSecret = "EgfOmuVQgHGSNpKzf6h0isJaDcRfKDWW";
 
-	UFUNCTION(BlueprintCallable, Category = "Auth")
-	FString GetAuthClientId();
-
-	UFUNCTION(BlueprintCallable, Category = "Auth")
-	FString GetAuthClientSecret();
+	
 };
